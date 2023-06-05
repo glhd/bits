@@ -1,6 +1,6 @@
 <?php
 
-namespace Glhd\LaravelPackageTemplate\Support;
+namespace Glhd\Bits\Support;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Blade;
@@ -18,16 +18,16 @@ class PackageServiceProvider extends ServiceProvider
 	
 	public function register()
 	{
-		$this->mergeConfigFrom($this->packageConfigFile(), 'laravel-package-template');
+		$this->mergeConfigFrom($this->packageConfigFile(), 'bits');
 	}
 	
 	protected function bootViews() : self
 	{
-		$this->loadViewsFrom($this->packageViewsDirectory(), 'laravel-package-template');
+		$this->loadViewsFrom($this->packageViewsDirectory(), 'bits');
 		
 		$this->publishes([
-			$this->packageViewsDirectory() => $this->app->resourcePath('views/vendor/laravel-package-template'),
-		], 'laravel-package-template-views');
+			$this->packageViewsDirectory() => $this->app->resourcePath('views/vendor/bits'),
+		], 'bits-views');
 		
 		return $this;
 	}
@@ -35,7 +35,7 @@ class PackageServiceProvider extends ServiceProvider
 	protected function bootBladeComponents() : self
 	{
 		if (version_compare($this->app->version(), '8.0.0', '>=')) {
-			Blade::componentNamespace('Glhd\\LaravelPackageTemplate\\Components', 'laravel-package-template');
+			Blade::componentNamespace('Glhd\\Bits\\Components', 'bits');
 		}
 		
 		return $this;
@@ -44,8 +44,8 @@ class PackageServiceProvider extends ServiceProvider
 	protected function bootConfig() : self
 	{
 		$this->publishes([
-			$this->packageConfigFile() => $this->app->configPath('laravel-package-template.php'),
-		], 'laravel-package-template-config');
+			$this->packageConfigFile() => $this->app->configPath('bits.php'),
+		], 'bits-config');
 		
 		return $this;
 	}
