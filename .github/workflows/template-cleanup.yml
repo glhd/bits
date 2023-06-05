@@ -16,7 +16,10 @@ jobs:
         run: |
           NAME="${GITHUB_REPOSITORY##*/}"
           KEBAB=$(echo $NAME | tr -s -c '[:alpha:][:cntrl:]' ' ' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-          STUDLY=$(echo $NAME | tr -s -c '[:alpha:][:cntrl:]' ' ' | tr '[:upper:]' '[:lower:]' | awk '{for(i=1;i<=NF;i++){$i=toupper(substr($i,1,1)) tolower(substr($i,2))}print}'')
+          STUDLY=$(echo $NAME | tr -s -c '[:alpha:][:cntrl:]' ' ' | tr '[:upper:]' '[:lower:]' | awk '{for(i=1;i<=NF;i++){$i=toupper(substr($i,1,1)) tolower(substr($i,2))}print}')
+          
+          echo "Kebab case: ${KEBAB}"
+          echo "Studly case: ${STUDLY}"
 
           # Replace placeholder names
           find src -type f -exec sed -i "s/laravel-package-template/$KEBAB/g" {} +
