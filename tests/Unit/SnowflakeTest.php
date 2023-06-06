@@ -5,7 +5,6 @@ namespace Glhd\Bits\Tests\Unit;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factory;
 use Glhd\Bits\Snowflake;
-use Glhd\Bits\Testing\InMemorySequenceResolver;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Facades\Date;
