@@ -1,8 +1,8 @@
 <?php
 
-namespace Glhd\LaravelPackageTemplate\Tests;
+namespace Glhd\Bits\Tests;
 
-use Glhd\LaravelPackageTemplate\Support\PackageServiceProvider;
+use Glhd\Bits\Support\BitsServiceProvider;
 use Illuminate\Container\Container;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -11,7 +11,7 @@ abstract class TestCase extends Orchestra
 	protected function getPackageProviders($app)
 	{
 		return [
-			PackageServiceProvider::class,
+			BitsServiceProvider::class,
 		];
 	}
 	

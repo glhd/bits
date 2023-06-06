@@ -1,5 +1,5 @@
 {
-  "name": "glhd/laravel-package-template",
+  "name": "glhd/bits",
   "description": "",
   "keywords": [
     "laravel"
@@ -13,18 +13,17 @@
   "type": "library",
   "license": "MIT",
   "require": {
-    "illuminate/support": "^8|^9|^10|11.x-dev|dev-master",
+    "illuminate/support": "^9|^10|11.x-dev|dev-master",
     "ext-json": "*"
   },
   "require-dev": {
-    "orchestra/testbench": "^6.24|^7.10|^8|9.x-dev|10.x-dev|dev-master",
+    "orchestra/testbench": "^7.10|^8|9.x-dev|10.x-dev|dev-master",
     "friendsofphp/php-cs-fixer": "^3.5",
-    "mockery/mockery": "^1.4",
-    "phpunit/phpunit": "^9.5"
+    "pestphp/pest": "^2.6"
   },
   "autoload": {
     "psr-4": {
-      "Glhd\\LaravelPackageTemplate\\": "src/"
+      "Glhd\\Bits\\": "src/"
     }
   },
   "autoload-dev": {
@@ -32,20 +31,26 @@
       "tests/TestCase.php"
     ],
     "psr-4": {
-      "Glhd\\LaravelPackageTemplate\\Tests\\": "tests/"
+      "Glhd\\Bits\\Tests\\": "tests/"
     }
   },
   "scripts": {
+    "pest": "vendor/bin/pest",
     "fix-style": "vendor/bin/php-cs-fixer fix",
     "check-style": "vendor/bin/php-cs-fixer fix --diff --dry-run"
   },
   "extra": {
     "laravel": {
       "providers": [
-        "Glhd\\LaravelPackageTemplate\\Support\\PackageServiceProvider"
+          "Glhd\\Bits\\BitsServiceProvider"
       ]
     }
   },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
 }
