@@ -6,6 +6,11 @@ use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Grammar;
 
+// This adds support for the Expression interface in earlier versions of Laravel
+if (! interface_exists('\\Illuminate\\Contracts\\Database\\Query\\Expression')) {
+	require_once __DIR__.'/../compat/illuminate_query_expression.php';
+}
+
 class Snowflake implements Expression, Castable
 {
 	public static function make(): Snowflake
