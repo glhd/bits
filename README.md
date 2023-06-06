@@ -47,13 +47,9 @@ The traditional snowflake (eg. `56705782302306333`) is composed of:
 
 ```
 0 0000001100100101110101100110111100101011 01011 01111 000000011101
-┳ ━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━ ━━┳━━ ━┳━━━ ━┳━━━━━━━━━━
-┗━ one unused bit  ┃     datacenter (5 bits) ┛    ┃     ┗━ "sequence" (12 bits)
-                   ┗━ timestamp (41 bits)         ┗━ worker (5 bits)                           
-
-39 bits for time in units of 10 msec
- 8 bits for a sequence number
-16 bits for a machine id
+┳ ━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━ ━━━┳━ ━┳━━━ ━┳━━━━━━━━━━
+┗━ unused bit    ┗━ timestamp (41 bits)       ┃   ┃     ┗━ "sequence" (12 bits)
+                         datacenter (5 bits) ━┛   ┗━ worker (5 bits)
 ```
 
 Where the same integer (`56705782302306333`) as a Sonyflake is composed of:
