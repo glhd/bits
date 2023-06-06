@@ -3,7 +3,7 @@
 use Glhd\Bits\Factory;
 use Glhd\Bits\Snowflake;
 
-if (!function_exists('snowflake')) { // @codeCoverageIgnore
+if (! function_exists('snowflake')) { // @codeCoverageIgnore
 	function snowflake(null|int|string|Snowflake $value = null): Snowflake|Factory
 	{
 		if (null === $value) {

@@ -3,7 +3,6 @@
 namespace Glhd\Bits\Tests;
 
 use Glhd\Bits\Support\BitsServiceProvider;
-use Illuminate\Container\Container;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra

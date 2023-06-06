@@ -20,7 +20,7 @@ return [
 	|--------------------------------------------------------------------------
 	|
 	| You can have up to 31 workers in each datacenter. If you deploy to
-	| multiple hosts, be sure to give each a unique worker ID to avoid 
+	| multiple hosts, be sure to give each a unique worker ID to avoid
 	| concurrency issues.
 	*/
 	
@@ -31,7 +31,7 @@ return [
 	| Datacenter ID
 	|--------------------------------------------------------------------------
 	|
-	| You can have up to 31 datacenters with the default snowflake 
+	| You can have up to 31 datacenters with the default snowflake
 	| configuration. If you are deploying to multiple datacenters, be sure to
 	| set this to a unique value in each.
 	*/

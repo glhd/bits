@@ -23,46 +23,46 @@ class Snowflake implements Expression, Castable
 		return app(Factory::class)->coerce($value);
 	}
 	
-    public static function castUsing(array $arguments): string
-    {
-        return SnowflakeCast::class;
-    }
+	public static function castUsing(array $arguments): string
+	{
+		return SnowflakeCast::class;
+	}
 
-    public function __construct(
-        public readonly int $timestamp,
-        public readonly int $datacenter_id,
-        public readonly int $worker_id,
-        public readonly int $sequence,
-        protected Bits $bits = new Bits(),
-    ) {
-        $this->validateConfiguration();
-    }
+	public function __construct(
+		public readonly int $timestamp,
+		public readonly int $datacenter_id,
+		public readonly int $worker_id,
+		public readonly int $sequence,
+		protected Bits $bits = new Bits(),
+	) {
+		$this->validateConfiguration();
+	}
 
-    public function id(): int
-    {
-        return $this->bits->combine($this->timestamp, $this->datacenter_id, $this->worker_id, $this->sequence);
-    }
+	public function id(): int
+	{
+		return $this->bits->combine($this->timestamp, $this->datacenter_id, $this->worker_id, $this->sequence);
+	}
 
-    public function is(Snowflake $other): bool
-    {
-        return $other->id() === $this->id();
-    }
+	public function is(Snowflake $other): bool
+	{
+		return $other->id() === $this->id();
+	}
 
-    public function getValue(?Grammar $grammar = null): int
-    {
-        return $this->id();
-    }
+	public function getValue(?Grammar $grammar = null): int
+	{
+		return $this->id();
+	}
 
-    public function __toString(): string
-    {
-        return (string) $this->id();
-    }
+	public function __toString(): string
+	{
+		return (string) $this->id();
+	}
 
-    protected function validateConfiguration(): void
-    {
-        $this->bits->validateTimestamp($this->timestamp);
-        $this->bits->validateDatacenterId($this->datacenter_id);
-        $this->bits->validateWorkerId($this->worker_id);
-        $this->bits->validateSequence($this->sequence);
-    }
+	protected function validateConfiguration(): void
+	{
+		$this->bits->validateTimestamp($this->timestamp);
+		$this->bits->validateDatacenterId($this->datacenter_id);
+		$this->bits->validateWorkerId($this->worker_id);
+		$this->bits->validateSequence($this->sequence);
+	}
 }

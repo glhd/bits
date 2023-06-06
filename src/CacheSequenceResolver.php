@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Cache;
 
 class CacheSequenceResolver implements ResolvesSequences
 {
-    public function next(int $timestamp): int
-    {
-        $key = "bits-seq:{$timestamp}";
+	public function next(int $timestamp): int
+	{
+		$key = "bits-seq:{$timestamp}";
 
-        Cache::add($key, 0, now()->addSeconds(10));
+		Cache::add($key, 0, now()->addSeconds(10));
 
-        return Cache::increment($key) - 1;
-    }
+		return Cache::increment($key) - 1;
+	}
 }
