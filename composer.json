@@ -15,6 +15,7 @@
   "require": {
     "php": "^8.1",
     "illuminate/support": "^9|^10|11.x-dev|dev-master",
+    "illuminate/contracts": "^9|^10|11.x-dev|dev-master",
     "ext-json": "*",
     "nesbot/carbon": "^2.67"
   },
