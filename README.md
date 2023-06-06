@@ -43,7 +43,7 @@ Bits is a PHP library for generating unique 64-bit identifiers for use in distri
 You can use Bits to create [Twitter Snowflake IDs](https://en.wikipedia.org/wiki/Snowflake_ID),
 [Sonyflake IDs](https://github.com/sony/sonyflake), or any other unique ID that uses bit sequences.
 
-The traditional snowflake (eg. `56705782302306333`) is composed of:
+### Snowflake format
 
 ```
 0 0000001100100101110101100110111100101011 01011 01111 000000011101
@@ -52,13 +52,16 @@ The traditional snowflake (eg. `56705782302306333`) is composed of:
                          datacenter (5 bits) ━┛   ┗━ worker (5 bits)
 ```
 
-Where the same integer (`56705782302306333`) as a Sonyflake is composed of:
+### Sonyflake format
 
 ```
 000000011001001011101011001101111001010 11010110 1111000000011101
 ━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ━━━━━━┳━ ━┳━━━━━━━━━━━━━━
  ┗ timestamp (39 bits)    "sequence" (8 bits) ┛   ┗ machine (16 bits)
 ```
+
+Both of these IDs are represented by the same 64-bit integer, `56705782302306333`,
+but convey different metadata. The trade-offs of each format make sense for differ  
 
 Depending on your scale and distribution needs, you may want to choose different
 trade-offs (maybe you don't need to support 31 datacenters, and instead want more
