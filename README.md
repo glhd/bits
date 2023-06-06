@@ -7,7 +7,7 @@
 	</a>
 	<a href="https://codeclimate.com/github/glhd/bits/test_coverage" target="_blank">
 		<img 
-			src="https://api.codeclimate.com/v1/badges/f597a6e8d9f968a55f03/test_coverage" 
+			src="https://api.codeclimate.com/v1/badges/6d6485f01a3118f38a63/test_coverage" 
 			alt="Coverage Status" 
 		/>
 	</a>
@@ -31,7 +31,7 @@
     </a>
 </div>
 
-# bits
+# Bits
 
 Please replace `glhd/bits` with the package name in this file, 
 the change log, and the `composer.json` file before continuing.
