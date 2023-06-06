@@ -10,9 +10,13 @@ return [
 	| unix timestamps). This allows them to be precise and still fit in
 	| a 64-bit integer. This should be a date in the past, but as recent
 	| as possible.
+	|
+	| PLEASE NOTE: If you change this after you start generating snowflakes,
+	|              you may run into collisions!
+	|
 	*/
 	
-	'epoch' => '2023-01-01',
+	'epoch' => env('BITS_EPOCH', '2023-01-01'),
 	
 	/*
 	|--------------------------------------------------------------------------
@@ -24,7 +28,7 @@ return [
 	| concurrency issues.
 	*/
 	
-	'worker_id' => env('SNOWFLAKE_WORKER_ID'),
+	'worker_id' => env('BITS_WORKER_ID'),
 	
 	/*
 	|--------------------------------------------------------------------------
@@ -36,5 +40,5 @@ return [
 	| set this to a unique value in each.
 	*/
 	
-	'datacenter_id' => env('SNOWFLAKE_DATACENTER_ID'),
+	'datacenter_id' => env('BITS_DATACENTER_ID'),
 ];
