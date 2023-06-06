@@ -3,16 +3,15 @@
 namespace Glhd\Bits;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
-use Illuminate\Database\Eloquent\Model;
 
 class SnowflakeCast implements CastsAttributes
 {
-	public function get(Model $model, string $key, mixed $value, array $attributes)
+	public function get($model, string $key, $value, array $attributes)
 	{
 		return Snowflake::coerce($value);
 	}
 
-	public function set(Model $model, string $key, mixed $value, array $attributes)
+	public function set($model, string $key, $value, array $attributes)
 	{
 		if ($value instanceof Snowflake) {
 			$value = $value->id();
