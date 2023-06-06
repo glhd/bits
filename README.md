@@ -39,16 +39,16 @@
 
 # Bits
 
-Bits is a PHP library for generating unique 64-bit identifiers for use in distributed computing.
-You can use Bits to create [Twitter Snowflake IDs](https://en.wikipedia.org/wiki/Snowflake_ID),
+**Bits** is a PHP library for generating unique 64-bit identifiers for use in distributed computing.
+You can use **Bits** to create [Twitter Snowflake IDs](https://en.wikipedia.org/wiki/Snowflake_ID),
 [Sonyflake IDs](https://github.com/sony/sonyflake), or any other unique ID that uses bit sequences.
 
 ### Snowflake format
 
 ```
 0 0000001100100101110101100110111100101011 01011 01111 000000011101
-┳ ━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━ ━━━┳━ ━┳━━━ ━┳━━━━━━━━━━
-┗━ unused bit    ┗━ timestamp (41 bits)       ┃   ┃     ┗━ "sequence" (12 bits)
+┳ ━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━ ━━━┳━ ━┳━━━ ━┳━━━━━━━━━━
+┗━ unused bit     ┗━ timestamp (41 bits)      ┃   ┃     ┗━ "sequence" (12 bits)
                          datacenter (5 bits) ━┛   ┗━ worker (5 bits)
 ```
 
@@ -61,13 +61,37 @@ You can use Bits to create [Twitter Snowflake IDs](https://en.wikipedia.org/wiki
 ```
 
 Both of these IDs are represented by the same 64-bit integer, `56705782302306333`,
-but convey different metadata. The trade-offs of each format make sense for differ  
+but convey different metadata. Depending on your scale and distribution needs,
+you may find one or the other format preferable, or choose to implement your own 
+custom format.
 
-Depending on your scale and distribution needs, you may want to choose different
-trade-offs (maybe you don't need to support 31 datacenters, and instead want more
-space for the timestamp portion, for example). Bits lets you configure any ID 
-structure you'd like, in the way that makes the most sense for your use-case.
+**Bits** lets generate any kind of 64-bit unique ID you'd like, in the way that makes 
+the most sense for your use-case.
 
 ## Installation
 
+```shell
+composer require glhd/bits
+```
+
 ## Usage
+
+To get a new snowflake ID, simply call `Snowflake::make()`. This returns a new
+`Snowflake object`:
+
+```php
+class Snowflake
+{
+    public readonly int $timestamp;
+    public readonly int $datacenter_id;
+    public readonly int $worker_id;
+    public readonly int $sequence;
+    
+    public function id(): int;
+    public function is(Snowflake $other): bool;
+}
+```
+
+You can use Snowflakes in Laravel models by just casting to `Snowflake::class`
+and Snowflakes implement `__toString()` and the Laravel `Query\Expression` interface
+so that you can use that easily as-is throughout your app.
