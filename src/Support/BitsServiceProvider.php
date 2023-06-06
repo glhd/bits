@@ -12,13 +12,6 @@ use Illuminate\Support\ServiceProvider;
 
 class BitsServiceProvider extends ServiceProvider
 {
-	public function boot()
-	{
-		require_once __DIR__.'/helpers.php';
-		
-		$this->bootConfig();
-	}
-	
 	public function register()
 	{
 		$this->mergeConfigFrom($this->packageConfigFile(), 'bits');
@@ -35,6 +28,13 @@ class BitsServiceProvider extends ServiceProvider
 				bits: $container->make(Bits::class),
 			);
 		});
+	}
+	
+	public function boot()
+	{
+		require_once __DIR__.'/helpers.php';
+		
+		$this->bootConfig();
 	}
 	
 	protected function bootConfig(): self
