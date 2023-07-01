@@ -13,7 +13,7 @@ class GenericFactory extends BitsFactory
 {
 	public function __construct(
 		CarbonInterface $epoch,
-		protected WorkerIds $ids,
+		public readonly WorkerIds $ids,
 		Configuration $config,
 		ResolvesSequences $sequence,
 	) {

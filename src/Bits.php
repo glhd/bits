@@ -20,7 +20,7 @@ if (! interface_exists(Expression::class)) {
 class Bits implements Expression, Castable
 {
 	/** @var \Illuminate\Support\Collection<int, int> $values */
-	protected Collection $values;
+	public readonly Collection $values;
 	
 	protected ?int $id = null;
 	

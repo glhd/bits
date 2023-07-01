@@ -74,7 +74,7 @@ so that you can use that easily as-is throughout your app.
 ### Usage with Eloquent Models
 
 ```php
-use Glhd\Bits\Database\HasSnowflakePrimaryKey;
+use Glhd\Bits\Database\HasSnowflakeKey;
 use Glhd\Bits\Snowflake;
 use Illuminate\Database\Eloquent\Model;
 
@@ -83,7 +83,7 @@ class Example extends Model
     // If you use this trait, each model will have a snowflake ID the moment
     // it is instantiated. You should set your primary key to be an unsigned big
     // integer with a unique constraint (but no auto-increment).
-    use HasSnowflakePrimaryKey;
+    use HasSnowflakeKey;
     
     // Any attribute can be cast to a `Snowflake` (or `Sonyflake`)
     protected $casts = [

@@ -4,9 +4,9 @@ namespace Glhd\Bits\Database;
 
 use Glhd\Bits\Snowflake;
 
-trait HasSnowflakePrimaryKey
+trait HasSnowflakeKey
 {
-	protected function initializeHasSnowflakePrimaryKey(): void
+	protected function initializeHasSnowflakeKey(): void
 	{
 		$this->attributes[$this->getKeyName()] = Snowflake::make()->id();
 	}

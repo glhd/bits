@@ -9,11 +9,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
+/** @property Collection<int, \Glhd\Bits\Config\Segment> $segments */
 class GenericConfig implements Configuration
 {
-	/** @var \Illuminate\Support\Collection<int, \Glhd\Bits\Config\Segment> $segments */
-	protected Collection $segments;
-	
 	protected ?Segment $timestamp_segment = null;
 	
 	protected ?Segment $sequence_segment = null;
@@ -21,10 +19,8 @@ class GenericConfig implements Configuration
 	public function __construct(
 		protected int $precision,
 		protected int $unit,
-		Segment ...$segments
+		protected Collection $segments,
 	) {
-		$this->segments = new Collection($segments);
-		
 		$this->setTimestampAndSequenceSegments();
 		$this->setPositionsAndOffsets();
 		
@@ -135,6 +131,10 @@ class GenericConfig implements Configuration
 		
 		if ($this->unit < 0 || $this->unit > $this->maxUnit()) {
 			throw new InvalidArgumentException("Timestamp unit must be between 0 and {$this->maxUnit()} when precision is set to {$this->precision} (got {$this->unit}).");
+		}
+		
+		if ($this->segments->contains(fn($segment) => ! $segment instanceof Segment)) {
+			throw new InvalidArgumentException("All segments must be of type 'Segment'");
 		}
 		
 		$total_bits = $this->segments->sum(fn(Segment $segment) => $segment->length);

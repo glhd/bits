@@ -5,7 +5,7 @@ namespace Glhd\Bits\Tests\Feature;
 use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
-use Glhd\Bits\Database\HasSnowflakePrimaryKey;
+use Glhd\Bits\Database\HasSnowflakeKey;
 use Glhd\Bits\Factories\SnowflakeFactory;
 use Glhd\Bits\Snowflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
@@ -41,11 +41,24 @@ class SnowflakeCastTest extends TestCase
 		
 		$this->assertTrue($model2->id->id() > $model1->id->id());
 	}
+	
+	public function test_you_can_set_id_manually(): void
+	{
+		$model = TestModel::forceCreate(['id' => 123]);
+		
+		$this->assertEquals(123, $model->id->id());
+		
+		$model = TestModel::find(123);
+		
+		$this->assertEquals(123, $model->id->id());
+		
+		$this->assertEquals(1, TestModel::count());
+	}
 }
 
 class TestModel extends Model
 {
-	use HasSnowflakePrimaryKey;
+	use HasSnowflakeKey;
 	
 	protected $casts = [
 		'id' => Snowflake::class,
