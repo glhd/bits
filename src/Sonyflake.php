@@ -4,10 +4,26 @@ namespace Glhd\Bits;
 
 use Glhd\Bits\Config\GenericConfiguration;
 use Glhd\Bits\Config\WorkerIds;
+use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Presets\Sonyflakes;
 
 class Sonyflake extends Bits
 {
+	public static function make(): static
+	{
+		return app(MakesSonyflakes::class)->make();
+	}
+	
+	public static function fromId(int|string $id): static
+	{
+		return app(MakesSonyflakes::class)->fromId($id);
+	}
+	
+	public static function coerce(int|string|Bits $value): static
+	{
+		return app(MakesSonyflakes::class)->coerce($value);
+	}
+	
 	public function __construct(
 		public readonly int $timestamp,
 		public readonly int $sequence,

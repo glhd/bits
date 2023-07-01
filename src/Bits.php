@@ -23,17 +23,17 @@ class Bits implements Expression, Castable
 	
 	protected ?int $id = null;
 	
-	public static function make(): Bits
+	public static function make(): static
 	{
 		return app(MakesBits::class)->make();
 	}
 	
-	public static function fromId(int|string $id): Bits
+	public static function fromId(int|string $id): static
 	{
 		return app(MakesBits::class)->fromId($id);
 	}
 	
-	public static function coerce(int|string|Bits $value): Bits
+	public static function coerce(int|string|Bits $value): static
 	{
 		return app(MakesBits::class)->coerce($value);
 	}

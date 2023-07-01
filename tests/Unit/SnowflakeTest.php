@@ -2,7 +2,6 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
-use Glhd\Bits\Bits;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SnowflakeFactory;
 use Glhd\Bits\Presets\Snowflakes;
@@ -21,7 +20,7 @@ class SnowflakeTest extends TestCase
 		$iterations = 10_000;
 		
 		for ($i = 0; $i < $iterations; $i++) {
-			$exists[Bits::make()->id()] = true;
+			$exists[Snowflake::make()->id()] = true;
 		}
 		
 		$this->assertCount($iterations, $exists);
@@ -29,7 +28,7 @@ class SnowflakeTest extends TestCase
 	
 	public function test_it_generates_snowflakes_in_the_expected_format(): void
 	{
-		$snowflake = Bits::make()->id();
+		$snowflake = Snowflake::make()->id();
 		
 		$this->assertGreaterThan(0, $snowflake);
 		$this->assertLessThanOrEqual(9_223_372_036_854_775_807, $snowflake);

@@ -12,7 +12,7 @@ class Sonyflakes extends GenericConfiguration
 		parent::__construct(
 			3,
 			10,
-			Segment::timestamp(label: 'timestamp', length: 39),
+			Segment::timestamp(label: 'timestamp', length: 40),
 			Segment::sequence(label: 'sequence', length: 8),
 			Segment::id(label: 'datacenter', length: 16),
 		);

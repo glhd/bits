@@ -5,6 +5,8 @@ namespace Glhd\Bits;
 use Glhd\Bits\Config\GenericConfiguration;
 use Glhd\Bits\Config\WorkerIds;
 use Glhd\Bits\Contracts\Configuration;
+use Glhd\Bits\Contracts\MakesBits;
+use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Presets\Snowflakes;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -12,6 +14,21 @@ use Illuminate\Database\Grammar;
 
 class Snowflake extends Bits
 {
+	public static function make(): static
+	{
+		return app(MakesSnowflakes::class)->make();
+	}
+	
+	public static function fromId(int|string $id): static
+	{
+		return app(MakesSnowflakes::class)->fromId($id);
+	}
+	
+	public static function coerce(int|string|Bits $value): static
+	{
+		return app(MakesSnowflakes::class)->coerce($value);
+	}
+	
 	public function __construct(
 		public readonly int $timestamp,
 		public readonly int $datacenter_id,

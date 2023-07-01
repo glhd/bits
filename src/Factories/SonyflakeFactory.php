@@ -19,13 +19,12 @@ class SonyflakeFactory extends BitsFactory implements MakesSonyflakes
 {
 	public function __construct(
 		CarbonInterface $epoch,
-		protected int $machine_id,
+		public readonly int $machine_id,
 		Sonyflakes $config,
 		ResolvesSequences $sequence,
 	) {
 		parent::__construct(
 			epoch: $epoch,
-			ids: new WorkerIds($this->machine_id),
 			config: $config,
 			sequence: $sequence,
 		);
