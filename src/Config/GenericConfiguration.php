@@ -101,13 +101,13 @@ class GenericConfiguration implements Configuration
 			});
 	}
 	
-	protected function validateValueForSegment(int $index, int $value): void
+	protected function validateValueForSegment(int $index, $value): void
 	{
 		$segment = $this->getSegment($index);
 		
-		if ($value < 0 || $value > $segment->maxValue()) {
+		if (! is_int($value) || $value < 0 || $value > $segment->maxValue()) {
 			$label = Str::of($segment->label)->ucfirst()->plural();
-			throw new InvalidArgumentException("{$label} must be between 0 and {$segment->maxValue()} (got {$value}).");
+			throw new InvalidArgumentException("{$label} must be an integer between 0 and {$segment->maxValue()} (got {$value}).");
 		}
 	}
 	

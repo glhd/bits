@@ -2,9 +2,9 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
-use Glhd\Bits\Contracts\ResolvesSequences;
-use Glhd\Bits\Factory;
 use Glhd\Bits\Bits;
+use Glhd\Bits\Contracts\ResolvesSequences;
+use Glhd\Bits\Factories\BitsFactory;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Facades\Date;
@@ -35,8 +35,8 @@ class SnowflakeTest extends TestCase
 	
 	public function test_it_generates_snowflakes_with_the_correct_datacenter_and_worker_ids(): void
 	{
-		$factory1 = new Factory(now(), random_int(0, 7), random_int(0, 7));
-		$factory2 = new Factory(now(), random_int(8, 15), random_int(8, 15));
+		$factory1 = new BitsFactory(now(), random_int(0, 7), random_int(0, 7));
+		$factory2 = new BitsFactory(now(), random_int(8, 15), random_int(8, 15));
 		
 		$snowflake1 = $factory1->make();
 		$snowflake2 = $factory2->make();
@@ -63,7 +63,7 @@ class SnowflakeTest extends TestCase
 		
 		$sequence = 0;
 		
-		$factory = new Factory(now(), 1, 15, 3, new class($sequence) implements ResolvesSequences {
+		$factory = new BitsFactory(now(), 1, 15, 3, new class($sequence) implements ResolvesSequences {
 			public function __construct(public int &$sequence)
 			{
 			}
@@ -113,7 +113,7 @@ class SnowflakeTest extends TestCase
 	{
 		Date::setTestNow(now());
 		
-		$factory = new Factory(now(), 31, 31, 3, new class() implements ResolvesSequences {
+		$factory = new BitsFactory(now(), 31, 31, 3, new class() implements ResolvesSequences {
 			public function next(int $timestamp): int
 			{
 				return 4095;

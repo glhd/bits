@@ -2,9 +2,8 @@
 
 namespace Glhd\Bits;
 
-use Glhd\Bits\Config\GenericConfiguration;
-use Glhd\Bits\Config\WorkerIds;
 use Glhd\Bits\Contracts\Configuration;
+use Glhd\Bits\Factories\BitsFactory;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Grammar;
@@ -24,17 +23,17 @@ class Bits implements Expression, Castable
 	
 	public static function make(): Bits
 	{
-		return app(Factory::class)->make();
+		return app(BitsFactory::class)->make();
 	}
 	
 	public static function fromId(int|string $id): Bits
 	{
-		return app(Factory::class)->fromId($id);
+		return app(BitsFactory::class)->fromId($id);
 	}
 	
 	public static function coerce(int|string|Bits $value): Bits
 	{
-		return app(Factory::class)->coerce($value);
+		return app(BitsFactory::class)->coerce($value);
 	}
 	
 	public static function castUsing(array $arguments): string
@@ -44,8 +43,8 @@ class Bits implements Expression, Castable
 	}
 
 	public function __construct(
-		protected Configuration $config,
-		int ...$values,
+		array $values,
+		protected Configuration $config
 	) {
 		$this->config->validate($values);
 		

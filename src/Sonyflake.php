@@ -4,20 +4,19 @@ namespace Glhd\Bits;
 
 use Glhd\Bits\Config\GenericConfiguration;
 use Glhd\Bits\Config\WorkerIds;
+use Glhd\Bits\Presets\Sonyflakes;
 
 class Sonyflake extends Bits
 {
 	public function __construct(
-		int $timestamp,
-		int $sequence,
+		public readonly int $timestamp,
+		public readonly int $sequence,
 		public readonly int $machine_id,
-		GenericConfiguration $config,
+		?Sonyflakes $config = null,
 	) {
 		parent::__construct(
-			new WorkerIds($this->machine_id),
-			$timestamp,
-			$sequence,
-			$config,
+			values: [$this->timestamp, $this->sequence, $this->machine_id],
+			config: $config ?? app(Sonyflakes::class),
 		);
 	}
 

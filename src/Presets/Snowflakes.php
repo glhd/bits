@@ -7,7 +7,7 @@ use Glhd\Bits\Config\Segment;
 use Glhd\Bits\Config\WorkerIds;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
-use Glhd\Bits\Factory;
+use Glhd\Bits\Factories\BitsFactory;
 use Illuminate\Support\Facades\Date;
 
 class Snowflakes extends GenericConfiguration
@@ -35,7 +35,7 @@ class Snowflakes extends GenericConfiguration
 			),
 			config: $this,
 			sequence: $sequence,
-		) extends Factory implements MakesSnowflakes {
+		) extends BitsFactory implements MakesSnowflakes {
 		};
 	}
 }
