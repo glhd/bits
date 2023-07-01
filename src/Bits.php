@@ -63,7 +63,7 @@ class Bits implements Expression, Castable
 	
 	public function is(Bits $other): bool
 	{
-		return ($other instanceof static::class) && $other->id() === $this->id();
+		return ($other instanceof static) && $other->id() === $this->id();
 	}
 	
 	public function getValue(?Grammar $grammar = null): int

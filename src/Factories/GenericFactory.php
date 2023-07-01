@@ -4,13 +4,10 @@ namespace Glhd\Bits\Factories;
 
 use Carbon\CarbonInterface;
 use Glhd\Bits\Bits;
-use Glhd\Bits\CacheSequenceResolver;
 use Glhd\Bits\Config\WorkerIds;
 use Glhd\Bits\Contracts\Configuration;
-use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use InvalidArgumentException;
-use RuntimeException;
 
 class GenericFactory extends BitsFactory
 {

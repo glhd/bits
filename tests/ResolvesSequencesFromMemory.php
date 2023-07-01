@@ -4,7 +4,7 @@ namespace Glhd\Bits\Tests;
 
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\BitsFactory;
-use Glhd\Bits\Testing\InMemorySequenceResolver;
+use Glhd\Bits\SequenceResolvers\InMemorySequenceResolver;
 
 trait ResolvesSequencesFromMemory
 {

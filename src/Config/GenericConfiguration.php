@@ -137,7 +137,8 @@ class GenericConfiguration implements Configuration
 			throw new InvalidArgumentException("Timestamp unit must be between 0 and {$this->maxUnit()} when precision is set to {$this->precision} (got {$this->unit}).");
 		}
 		
-		$total_bits = $this->segments->sum('value');
+		$total_bits = $this->segments->sum(fn(Segment $segment) => $segment->length);
+		
 		if (64 !== $total_bits) {
 			throw new InvalidArgumentException("The total number of bits for all segments in an ID must equal 64 (got {$total_bits}).");
 		}

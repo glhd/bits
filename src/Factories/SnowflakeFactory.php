@@ -4,25 +4,19 @@ namespace Glhd\Bits\Factories;
 
 use Carbon\CarbonInterface;
 use Glhd\Bits\Bits;
-use Glhd\Bits\CacheSequenceResolver;
-use Glhd\Bits\Config\WorkerIds;
-use Glhd\Bits\Contracts\Configuration;
-use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Presets\Snowflakes;
 use Glhd\Bits\Snowflake;
-use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
-use RuntimeException;
 
 /** @property Snowflakes $config */
 class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 {
 	public function __construct(
 		CarbonInterface $epoch,
-		protected int $datacenter_id,
-		protected int $worker_id,
+		public readonly int $datacenter_id,
+		public readonly int $worker_id,
 		Snowflakes $config,
 		ResolvesSequences $sequence,
 	) {

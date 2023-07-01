@@ -1,6 +1,6 @@
 <?php
 
-namespace Glhd\Bits;
+namespace Glhd\Bits\SequenceResolvers;
 
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Illuminate\Support\Facades\Cache;

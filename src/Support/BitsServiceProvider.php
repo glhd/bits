@@ -2,7 +2,6 @@
 
 namespace Glhd\Bits\Support;
 
-use Glhd\Bits\CacheSequenceResolver;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
@@ -12,6 +11,7 @@ use Glhd\Bits\Factories\SnowflakeFactory;
 use Glhd\Bits\Factories\SonyflakeFactory;
 use Glhd\Bits\Presets\Snowflakes as SnowflakesPreset;
 use Glhd\Bits\Presets\Sonyflakes as SonyflakesPreset;
+use Glhd\Bits\SequenceResolvers\CacheSequenceResolver;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\DateFactory;
@@ -34,12 +34,12 @@ class BitsServiceProvider extends ServiceProvider
 			$config = $container->make(Repository::class);
 			$dates = $container->make(DateFactory::class);
 			
-			new SnowflakeFactory(
+			return new SnowflakeFactory(
 				epoch: $dates->parse($config->get('bits.epoch', '2023-01-01'), 'UTC')->startOfDay(),
 				datacenter_id: $config->get('bits.datacenter_id') ?? random_int(0, 31),
 				worker_id: $config->get('bits.worker_id') ?? random_int(0, 31),
 				config: $container->make(SnowflakesPreset::class),
-				sequence: $config->make(ResolvesSequences::class),
+				sequence: $container->make(ResolvesSequences::class),
 			);
 		});
 		
@@ -47,11 +47,11 @@ class BitsServiceProvider extends ServiceProvider
 			$config = $container->make(Repository::class);
 			$dates = $container->make(DateFactory::class);
 			
-			new SonyflakeFactory(
+			return new SonyflakeFactory(
 				epoch: $dates->parse($config->get('bits.epoch', '2023-01-01'), 'UTC')->startOfDay(),
 				machine_id: $config->get('bits.worker_id') ?? random_int(0, 65535),
 				config: $container->make(SonyflakesPreset::class),
-				sequence: $config->make(ResolvesSequences::class),
+				sequence: $container->make(ResolvesSequences::class),
 			);
 		});
 		
@@ -62,7 +62,7 @@ class BitsServiceProvider extends ServiceProvider
 			return match ($format) {
 				'snowflake', 'snowflakes' => $container->make(MakesSnowflakes::class),
 				'sonyflake', 'sonyflakes' => $container->make(MakesSonyflakes::class),
-				default => throw new InvalidArgumentException("Unknown bits format: '{$format}'"),
+				default => value(fn() => throw new InvalidArgumentException("Unknown bits format: '{$format}'")),
 			};
 		});
 	}

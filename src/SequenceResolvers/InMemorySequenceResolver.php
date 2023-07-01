@@ -1,6 +1,6 @@
 <?php
 
-namespace Glhd\Bits\Testing;
+namespace Glhd\Bits\SequenceResolvers;
 
 use Glhd\Bits\Contracts\ResolvesSequences;
 

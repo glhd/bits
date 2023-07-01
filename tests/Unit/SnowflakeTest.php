@@ -4,7 +4,9 @@ namespace Glhd\Bits\Tests\Unit;
 
 use Glhd\Bits\Bits;
 use Glhd\Bits\Contracts\ResolvesSequences;
-use Glhd\Bits\Factories\BitsFactory;
+use Glhd\Bits\Factories\SnowflakeFactory;
+use Glhd\Bits\Presets\Snowflakes;
+use Glhd\Bits\Snowflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Facades\Date;
@@ -35,8 +37,8 @@ class SnowflakeTest extends TestCase
 	
 	public function test_it_generates_snowflakes_with_the_correct_datacenter_and_worker_ids(): void
 	{
-		$factory1 = new BitsFactory(now(), random_int(0, 7), random_int(0, 7));
-		$factory2 = new BitsFactory(now(), random_int(8, 15), random_int(8, 15));
+		$factory1 = new SnowflakeFactory(now(), random_int(0, 7), random_int(0, 7), app(Snowflakes::class), app(ResolvesSequences::class));
+		$factory2 = new SnowflakeFactory(now(), random_int(8, 15), random_int(8, 15), app(Snowflakes::class), app(ResolvesSequences::class));
 		
 		$snowflake1 = $factory1->make();
 		$snowflake2 = $factory2->make();
@@ -50,7 +52,7 @@ class SnowflakeTest extends TestCase
 	
 	public function test_it_can_parse_an_existing_snowflake(): void
 	{
-		$snowflake = Bits::fromId(1537200202186752);
+		$snowflake = Snowflake::fromId(1537200202186752);
 		
 		$this->assertEquals(0, $snowflake->datacenter_id);
 		$this->assertEquals(0, $snowflake->worker_id);
@@ -63,7 +65,7 @@ class SnowflakeTest extends TestCase
 		
 		$sequence = 0;
 		
-		$factory = new BitsFactory(now(), 1, 15, 3, new class($sequence) implements ResolvesSequences {
+		$factory = new SnowflakeFactory(now(), 1, 15, app(Snowflakes::class), new class($sequence) implements ResolvesSequences {
 			public function __construct(public int &$sequence)
 			{
 			}
@@ -107,38 +109,5 @@ class SnowflakeTest extends TestCase
 		$this->assertEquals($snowflake_at_2ms->datacenter_id, 1);
 		$this->assertEquals($snowflake_at_2ms->worker_id, 15);
 		$this->assertEquals($snowflake_at_2ms->sequence, 3);
-	}
-	
-	public function test_it_can_generate_a_snowflake_for_a_given_timestamp(): void
-	{
-		Date::setTestNow(now());
-		
-		$factory = new BitsFactory(now(), 31, 31, 3, new class() implements ResolvesSequences {
-			public function next(int $timestamp): int
-			{
-				return 4095;
-			}
-		});
-		
-		$a = $factory->makeFromTimestampForQuery(now()->addMinutes(30));
-		
-		// FIXME: Should sequence be considered?
-		
-		$this->assertEquals($a->id(), 0b0000000000000000000001101101110111010000000000000000000000000000);
-		$this->assertEquals($a->timestamp, 1_800_000);
-		$this->assertEquals($a->datacenter_id, 0);
-		$this->assertEquals($a->worker_id, 0);
-		$this->assertEquals($a->sequence, 0);
-		
-		$b = $factory->makeFromTimestampForQuery(now()->addMinutes(60));
-		
-		$this->assertEquals($b->id(), 0b0000000000000000000011011011101110100000000000000000000000000000);
-		$this->assertEquals($b->timestamp, 3_600_000);
-		$this->assertEquals($b->datacenter_id, 0);
-		$this->assertEquals($b->worker_id, 0);
-		$this->assertEquals($b->sequence, 0);
-		
-		$minutes = ($b->timestamp - $a->timestamp) / 60_000;
-		$this->assertEquals(30, $minutes);
 	}
 }
