@@ -2,10 +2,10 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
+use Glhd\Bits\Config\SonyflakesConfig;
 use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SonyflakeFactory;
-use Glhd\Bits\Presets\Sonyflakes;
 use Glhd\Bits\Sonyflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
@@ -44,8 +44,8 @@ class SonyflakeTest extends TestCase
 	
 	public function test_it_generates_sonyflakes_with_the_correct_machine_id(): void
 	{
-		$factory1 = new SonyflakeFactory(now(), random_int(0, 32_000), app(Sonyflakes::class), app(ResolvesSequences::class));
-		$factory2 = new SonyflakeFactory(now(), random_int(32_001, 65_535), app(Sonyflakes::class), app(ResolvesSequences::class));
+		$factory1 = new SonyflakeFactory(now(), random_int(0, 32_000), app(SonyflakesConfig::class), app(ResolvesSequences::class));
+		$factory2 = new SonyflakeFactory(now(), random_int(32_001, 65_535), app(SonyflakesConfig::class), app(ResolvesSequences::class));
 		
 		$Sonyflake1 = $factory1->make();
 		$Sonyflake2 = $factory2->make();
@@ -69,7 +69,7 @@ class SonyflakeTest extends TestCase
 		
 		$sequence = 0;
 		
-		$factory = new SonyflakeFactory(now(), 1, app(Sonyflakes::class), new class($sequence) implements ResolvesSequences {
+		$factory = new SonyflakeFactory(now(), 1, app(SonyflakesConfig::class), new class($sequence) implements ResolvesSequences {
 			public function __construct(public int &$sequence)
 			{
 			}

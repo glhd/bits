@@ -6,6 +6,7 @@ use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\MakesSonyflakes;
+use Glhd\Bits\Support\BitsCast;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Grammar;
@@ -38,12 +39,11 @@ class Bits implements Expression, Castable
 		return app(MakesBits::class)->coerce($value);
 	}
 	
-	public static function castUsing(array $arguments): string
+	public static function castUsing(array $arguments): BitsCast
 	{
 		return match (reset($arguments)) {
-			'snowflake', 'snowflakes' => new BitsCast(app(MakesSnowflakes::class)),
 			'sonyflake', 'sonyflakes' => new BitsCast(app(MakesSonyflakes::class)),
-			default => BitsCast::class,
+			default => new BitsCast(app(MakesSnowflakes::class)),
 		};
 	}
 	

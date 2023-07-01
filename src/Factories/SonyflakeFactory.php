@@ -4,19 +4,19 @@ namespace Glhd\Bits\Factories;
 
 use Carbon\CarbonInterface;
 use Glhd\Bits\Bits;
+use Glhd\Bits\Config\SonyflakesConfig;
 use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
-use Glhd\Bits\Presets\Sonyflakes;
 use Glhd\Bits\Sonyflake;
 use InvalidArgumentException;
 
-/** @property Sonyflakes $config */
+/** @property SonyflakesConfig $config */
 class SonyflakeFactory extends BitsFactory implements MakesSonyflakes
 {
 	public function __construct(
 		CarbonInterface $epoch,
 		public readonly int $machine_id,
-		Sonyflakes $config,
+		SonyflakesConfig $config,
 		ResolvesSequences $sequence,
 	) {
 		parent::__construct(

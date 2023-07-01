@@ -2,10 +2,10 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
+use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SnowflakeFactory;
-use Glhd\Bits\Presets\Snowflakes;
 use Glhd\Bits\Snowflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
@@ -44,8 +44,8 @@ class SnowflakeTest extends TestCase
 	
 	public function test_it_generates_snowflakes_with_the_correct_datacenter_and_worker_ids(): void
 	{
-		$factory1 = new SnowflakeFactory(now(), random_int(0, 7), random_int(0, 7), app(Snowflakes::class), app(ResolvesSequences::class));
-		$factory2 = new SnowflakeFactory(now(), random_int(8, 15), random_int(8, 15), app(Snowflakes::class), app(ResolvesSequences::class));
+		$factory1 = new SnowflakeFactory(now(), random_int(0, 7), random_int(0, 7), app(SnowflakesConfig::class), app(ResolvesSequences::class));
+		$factory2 = new SnowflakeFactory(now(), random_int(8, 15), random_int(8, 15), app(SnowflakesConfig::class), app(ResolvesSequences::class));
 		
 		$snowflake1 = $factory1->make();
 		$snowflake2 = $factory2->make();
@@ -72,7 +72,7 @@ class SnowflakeTest extends TestCase
 		
 		$sequence = 0;
 		
-		$factory = new SnowflakeFactory(now(), 1, 15, app(Snowflakes::class), new class($sequence) implements ResolvesSequences {
+		$factory = new SnowflakeFactory(now(), 1, 15, app(SnowflakesConfig::class), new class($sequence) implements ResolvesSequences {
 			public function __construct(public int &$sequence)
 			{
 			}

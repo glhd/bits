@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
-class GenericConfiguration implements Configuration
+class GenericConfig implements Configuration
 {
 	/** @var \Illuminate\Support\Collection<int, \Glhd\Bits\Config\Segment> $segments */
 	protected Collection $segments;

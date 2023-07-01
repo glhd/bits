@@ -2,8 +2,8 @@
 
 namespace Glhd\Bits;
 
+use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
-use Glhd\Bits\Presets\Snowflakes;
 
 class Snowflake extends Bits
 {
@@ -27,11 +27,11 @@ class Snowflake extends Bits
 		public readonly int $datacenter_id,
 		public readonly int $worker_id,
 		public readonly int $sequence,
-		?Snowflakes $config = null,
+		?SnowflakesConfig $config = null,
 	) {
 		parent::__construct(
 			values: [0, $this->timestamp, $this->datacenter_id, $this->worker_id, $this->sequence],
-			config: $config ?? app(Snowflakes::class),
+			config: $config ?? app(SnowflakesConfig::class),
 		);
 	}
 

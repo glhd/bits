@@ -1,11 +1,8 @@
 <?php
 
-namespace Glhd\Bits\Presets;
+namespace Glhd\Bits\Config;
 
-use Glhd\Bits\Config\GenericConfiguration;
-use Glhd\Bits\Config\Segment;
-
-class Sonyflakes extends GenericConfiguration
+class SonyflakesConfig extends GenericConfig
 {
 	public function __construct()
 	{

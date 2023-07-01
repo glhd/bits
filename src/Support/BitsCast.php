@@ -1,7 +1,8 @@
 <?php
 
-namespace Glhd\Bits;
+namespace Glhd\Bits\Support;
 
+use Glhd\Bits\Bits;
 use Glhd\Bits\Contracts\MakesBits;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 
@@ -16,13 +17,13 @@ class BitsCast implements CastsAttributes
 	{
 		return $this->factory->coerce($value);
 	}
-
+	
 	public function set($model, string $key, $value, array $attributes)
 	{
 		if ($value instanceof Bits) {
 			$value = $value->id();
 		}
-
+		
 		return (int) $value;
 	}
 }

@@ -2,8 +2,8 @@
 
 namespace Glhd\Bits;
 
+use Glhd\Bits\Config\SonyflakesConfig;
 use Glhd\Bits\Contracts\MakesSonyflakes;
-use Glhd\Bits\Presets\Sonyflakes;
 
 class Sonyflake extends Bits
 {
@@ -26,11 +26,11 @@ class Sonyflake extends Bits
 		public readonly int $timestamp,
 		public readonly int $sequence,
 		public readonly int $machine_id,
-		?Sonyflakes $config = null,
+		?SonyflakesConfig $config = null,
 	) {
 		parent::__construct(
 			values: [$this->timestamp, $this->sequence, $this->machine_id],
-			config: $config ?? app(Sonyflakes::class),
+			config: $config ?? app(SonyflakesConfig::class),
 		);
 	}
 

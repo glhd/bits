@@ -43,31 +43,6 @@
 You can use **Bits** to create [Twitter Snowflake IDs](https://en.wikipedia.org/wiki/Snowflake_ID),
 [Sonyflake IDs](https://github.com/sony/sonyflake), or any other unique ID that uses bit sequences.
 
-### Snowflake format
-
-```
-0 0000001100100101110101100110111100101011 01011 01111 000000011101
-┳ ━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━ ━━━┳━ ━┳━━━ ━┳━━━━━━━━━━
-┗━ unused bit     ┗━ timestamp (41 bits)      ┃   ┃     ┗━ "sequence" (12 bits)
-                         datacenter (5 bits) ━┛   ┗━ worker (5 bits)
-```
-
-### Sonyflake format
-
-```
-000000011001001011101011001101111001010 11010110 1111000000011101
-━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ━━━━━━┳━ ━┳━━━━━━━━━━━━━━
- ┗ timestamp (39 bits)    "sequence" (8 bits) ┛   ┗ machine (16 bits)
-```
-
-Both of these IDs are represented by the same 64-bit integer, `56705782302306333`,
-but convey different metadata. Depending on your scale and distribution needs,
-you may find one or the other format preferable, or choose to implement your own 
-custom format.
-
-**Bits** lets generate any kind of 64-bit unique ID you'd like, in the way that makes 
-the most sense for your use-case.
-
 ## Installation
 
 ```shell
@@ -95,3 +70,28 @@ class Snowflake
 You can use Snowflakes in Laravel models by just casting to `Snowflake::class`
 and Snowflakes implement `__toString()` and the Laravel `Query\Expression` interface
 so that you can use that easily as-is throughout your app.
+
+### Snowflake format
+
+```
+0 0000001100100101110101100110111100101011 01011 01111 000000011101
+┳ ━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━ ━━━┳━ ━┳━━━ ━┳━━━━━━━━━━
+┗━ unused bit     ┗━ timestamp (41 bits)      ┃   ┃     ┗━ "sequence" (12 bits)
+                         datacenter (5 bits) ━┛   ┗━ worker (5 bits)
+```
+
+### Sonyflake format
+
+```
+000000011001001011101011001101111001010 11010110 1111000000011101
+━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ━━━━━━┳━ ━┳━━━━━━━━━━━━━━
+ ┗ timestamp (39 bits)    "sequence" (8 bits) ┛   ┗ machine (16 bits)
+```
+
+Both of these IDs are represented by the same 64-bit integer, `56705782302306333`,
+but convey different metadata. Depending on your scale and distribution needs,
+you may find one or the other format preferable, or choose to implement your own
+custom format.
+
+**Bits** lets generate any kind of 64-bit unique ID you'd like, in the way that makes
+the most sense for your use-case.
