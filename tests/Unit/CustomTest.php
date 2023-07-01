@@ -11,6 +11,7 @@ use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\GenericFactory;
 use Glhd\Bits\SequenceResolvers\InMemorySequenceResolver;
 use Glhd\Bits\SequenceResolvers\TestingSequenceResolver;
+use Glhd\Bits\Snowflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Collection;
@@ -68,6 +69,24 @@ class CustomTest extends TestCase
 		$this->assertEquals(0, $bits->values[2]);
 		
 		$this->assertFalse(isset($bits->values[3]));
+	}
+	
+	public function test_two_bits_with_same_id_are_considered_equal(): void
+	{
+		$bits1 = Bits::fromId(1537200202186752);
+		$bits2 = Bits::fromId(1537200202186752);
+		
+		$this->assertTrue($bits1->is($bits2));
+		$this->assertTrue($bits2->is($bits1));
+	}
+	
+	public function test_bits_are_not_considered_equal_to_snowflake_with_same_value(): void
+	{
+		$bits = Bits::fromId(1537200202186752);
+		$snowflake = Snowflake::fromId(1537200202186752);
+		
+		$this->assertFalse($bits->is($snowflake));
+		$this->assertFalse($snowflake->is($bits));
 	}
 	
 	public function test_it_generates_predictable_snowflakes(): void

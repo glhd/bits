@@ -63,6 +63,15 @@ class SonyflakeTest extends TestCase
 		$this->assertEquals(61469, $sonyflake->machine_id);
 	}
 	
+	public function test_two_sonyflakes_with_same_id_are_considered_equal(): void
+	{
+		$sonyflake1 = Sonyflake::fromId(1537200202186752);
+		$sonyflake2 = Sonyflake::fromId(1537200202186752);
+		
+		$this->assertTrue($sonyflake1->is($sonyflake2));
+		$this->assertTrue($sonyflake2->is($sonyflake1));
+	}
+	
 	public function test_it_generates_predictable_sonyflakes(): void
 	{
 		Date::setTestNow(now());

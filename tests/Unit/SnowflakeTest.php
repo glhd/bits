@@ -2,11 +2,14 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
+use Glhd\Bits\Bits;
 use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SnowflakeFactory;
+use Glhd\Bits\SequenceResolvers\TestingSequenceResolver;
 use Glhd\Bits\Snowflake;
+use Glhd\Bits\Sonyflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Facades\Date;
@@ -66,22 +69,37 @@ class SnowflakeTest extends TestCase
 		$this->assertEquals(0, $snowflake->sequence);
 	}
 	
+	public function test_two_snowflakes_with_same_id_are_considered_equal(): void
+	{
+		$snowflake1 = Snowflake::fromId(1537200202186752);
+		$snowflake2 = Snowflake::fromId(1537200202186752);
+		
+		$this->assertTrue($snowflake1->is($snowflake2));
+		$this->assertTrue($snowflake2->is($snowflake1));
+	}
+	
+	public function test_snowflakes_are_not_considered_equal_to_sonyflakes_with_same_value(): void
+	{
+		$snowflake = Snowflake::fromId(1537200202186752);
+		$sonyflake = Sonyflake::fromId(1537200202186752);
+		
+		$this->assertFalse($snowflake->is($sonyflake));
+		$this->assertFalse($sonyflake->is($snowflake));
+	}
+	
 	public function test_it_generates_predictable_snowflakes(): void
 	{
 		Date::setTestNow(now());
 		
 		$sequence = 0;
 		
-		$factory = new SnowflakeFactory(now(), 1, 15, app(SnowflakesConfig::class), new class($sequence) implements ResolvesSequences {
-			public function __construct(public int &$sequence)
-			{
-			}
-			
-			public function next(int $timestamp): int
-			{
-				return $this->sequence++;
-			}
-		});
+		$factory = new SnowflakeFactory(
+			epoch: now(), 
+			datacenter_id: 1, 
+			worker_id: 15, 
+			config: app(SnowflakesConfig::class), 
+			sequence: new TestingSequenceResolver($sequence)
+		);
 		
 		$snowflake_at_epoch1 = $factory->make();
 		
