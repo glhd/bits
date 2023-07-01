@@ -86,6 +86,11 @@ class GenericConfig implements Configuration
 		}
 	}
 	
+	public function unitInMicroseconds(): int
+	{
+		return ceil(1000000 * ($this->unit / (10 ** $this->precision)));
+	}
+	
 	protected function mapWorkerIdsToPositions(WorkerIds $values): Collection
 	{
 		$ids = $values->ids;

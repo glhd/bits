@@ -20,4 +20,6 @@ interface Configuration
 	public function maxSequence(): int;
 	
 	public function validate(Collection|array|WorkerIds $values): void;
+	
+	public function unitInMicroseconds(): int;
 }

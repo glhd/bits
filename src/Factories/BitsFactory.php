@@ -6,8 +6,14 @@ use Carbon\CarbonInterface;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\ResolvesSequences;
+use Illuminate\Support\Sleep;
 use InvalidArgumentException;
 use RuntimeException;
+
+// Add support for Sleep class in older versions of Laravel
+if (!class_exists(Sleep::class)) {
+	require_once __DIR__.'/../../compat/Illuminate/Support/Sleep.php';
+}
 
 abstract class BitsFactory implements MakesBits
 {
@@ -27,7 +33,7 @@ abstract class BitsFactory implements MakesBits
 		
 		// If we've used all available numbers in sequence, we'll sleep and try again
 		if ($sequence > $this->config->maxSequence()) {
-			usleep(1);
+			Sleep::usleep($this->config->unitInMicroseconds());
 			
 			return $this->waitForValidTimestampAndSequence();
 		}
