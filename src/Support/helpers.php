@@ -1,15 +1,29 @@
 <?php
 
-use Glhd\Bits\Factory;
+use Glhd\Bits\Bits;
+use Glhd\Bits\Contracts\MakesSnowflakes;
+use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Snowflake;
+use Glhd\Bits\Sonyflake;
 
-if (! function_exists('snowflake')) { // @codeCoverageIgnore
-	function snowflake(null|int|string|Snowflake $value = null): Snowflake|Factory
+if (! function_exists('snowflake')) {
+	function snowflake(null|int|string|Bits $value = null): Snowflake|MakesSnowflakes
 	{
 		if (null === $value) {
-			return app(Factory::class);
+			return app(MakesSnowflakes::class);
 		}
 		
-		return app(Factory::class)->coerce($value);
+		return app(MakesSnowflakes::class)->coerce($value);
+	}
+}
+
+if (! function_exists('sonyflake')) {
+	function sonyflake(null|int|string|Bits $value = null): Sonyflake|MakesSonyflakes
+	{
+		if (null === $value) {
+			return app(MakesSonyflakes::class);
+		}
+		
+		return app(MakesSonyflakes::class)->coerce($value);
 	}
 }
