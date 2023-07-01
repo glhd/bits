@@ -2,6 +2,7 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
+use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SonyflakeFactory;
 use Glhd\Bits\Presets\Sonyflakes;
@@ -13,6 +14,13 @@ use Illuminate\Support\Facades\Date;
 class SonyflakeTest extends TestCase
 {
 	use ResolvesSequencesFromMemory;
+	
+	public function test_global_helper_function(): void
+	{
+		$this->assertInstanceOf(MakesSonyflakes::class, sonyflake());
+		$this->assertInstanceOf(Sonyflake::class, sonyflake()->make());
+		$this->assertInstanceOf(Sonyflake::class, sonyflake(1));
+	}
 	
 	public function test_it_generates_unique_ids(): void
 	{

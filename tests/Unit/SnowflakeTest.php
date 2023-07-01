@@ -2,6 +2,7 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
+use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SnowflakeFactory;
 use Glhd\Bits\Presets\Snowflakes;
@@ -13,6 +14,13 @@ use Illuminate\Support\Facades\Date;
 class SnowflakeTest extends TestCase
 {
 	use ResolvesSequencesFromMemory;
+	
+	public function test_global_helper_function(): void
+	{
+		$this->assertInstanceOf(MakesSnowflakes::class, snowflake());
+		$this->assertInstanceOf(Snowflake::class, snowflake()->make());
+		$this->assertInstanceOf(Snowflake::class, snowflake(1));
+	}
 	
 	public function test_it_generates_unique_ids(): void
 	{

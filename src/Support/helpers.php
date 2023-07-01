@@ -2,9 +2,11 @@
 
 use Glhd\Bits\Bits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
+use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Snowflake;
+use Glhd\Bits\Sonyflake;
 
-if (! function_exists('snowflake')) { // @codeCoverageIgnore
+if (! function_exists('snowflake')) {
 	function snowflake(null|int|string|Bits $value = null): Snowflake|MakesSnowflakes
 	{
 		if (null === $value) {
@@ -12,5 +14,16 @@ if (! function_exists('snowflake')) { // @codeCoverageIgnore
 		}
 		
 		return app(MakesSnowflakes::class)->coerce($value);
+	}
+}
+
+if (! function_exists('sonyflake')) {
+	function sonyflake(null|int|string|Bits $value = null): Sonyflake|MakesSonyflakes
+	{
+		if (null === $value) {
+			return app(MakesSonyflakes::class);
+		}
+		
+		return app(MakesSonyflakes::class)->coerce($value);
 	}
 }
