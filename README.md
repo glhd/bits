@@ -71,6 +71,33 @@ You can use Snowflakes in Laravel models by just casting to `Snowflake::class`
 and Snowflakes implement `__toString()` and the Laravel `Query\Expression` interface
 so that you can use that easily as-is throughout your app.
 
+### Usage with Eloquent Models
+
+```php
+use Glhd\Bits\Database\HasSnowflakePrimaryKey;
+use Glhd\Bits\Snowflake;
+use Illuminate\Database\Eloquent\Model;
+
+class Example extends Model
+{
+    // If you use this trait, each model will have a snowflake ID the moment
+    // it is instantiated. You should set your primary key to be an unsigned big
+    // integer with a unique constraint (but no auto-increment).
+    use HasSnowflakePrimaryKey;
+    
+    // Any attribute can be cast to a `Snowflake` (or `Sonyflake`)
+    protected $casts = [
+        'id' => Snowflake::class,
+    ];
+}
+
+$example = Example::make();
+
+$example->id instanceof Snowflake; // true
+
+echo $example->id; // 65898467809951744
+```
+
 ### Snowflake format
 
 ```
