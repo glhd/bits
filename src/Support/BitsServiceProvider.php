@@ -20,7 +20,7 @@ class BitsServiceProvider extends ServiceProvider
 		
 		$this->app->singleton(Factory::class, function(Container $container) {
 			return new Factory(
-				epoch: Date::parse(config('bits.epoch')),
+				epoch: Date::parse(config('bits.epoch'))->startOfDay(),
 				datacenter_id: (int) (config('bits.datacenter_id') ?? random_int(0, 31)),
 				worker_id: (int) (config('bits.worker_id') ?? random_int(0, 31)),
 				precision: (int) (config('bits.precision') ?? 3),
