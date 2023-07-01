@@ -87,6 +87,18 @@ class SnowflakeTest extends TestCase
 		$this->assertFalse($sonyflake->is($snowflake));
 	}
 	
+	public function test_valid_types_can_be_coerced_to_snowflake(): void
+	{
+		$direct = Snowflake::fromId(1537200202186752);
+		$from_int = Snowflake::coerce(1537200202186752);
+		$from_string = Snowflake::coerce('1537200202186752');
+		$from_bits = Snowflake::coerce($direct);
+		
+		$this->assertTrue($direct->is($from_int));
+		$this->assertTrue($direct->is($from_string));
+		$this->assertTrue($direct->is($from_bits));
+	}
+	
 	public function test_it_generates_predictable_snowflakes(): void
 	{
 		Date::setTestNow(now());

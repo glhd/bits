@@ -6,6 +6,7 @@ use Glhd\Bits\Config\SonyflakesConfig;
 use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SonyflakeFactory;
+use Glhd\Bits\SequenceResolvers\TestingSequenceResolver;
 use Glhd\Bits\Sonyflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
@@ -72,22 +73,25 @@ class SonyflakeTest extends TestCase
 		$this->assertTrue($sonyflake2->is($sonyflake1));
 	}
 	
+	public function test_valid_types_can_be_coerced_to_sonyflake(): void
+	{
+		$direct = Sonyflake::fromId(1537200202186752);
+		$from_int = Sonyflake::coerce(1537200202186752);
+		$from_string = Sonyflake::coerce('1537200202186752');
+		$from_bits = Sonyflake::coerce($direct);
+		
+		$this->assertTrue($direct->is($from_int));
+		$this->assertTrue($direct->is($from_string));
+		$this->assertTrue($direct->is($from_bits));
+	}
+	
 	public function test_it_generates_predictable_sonyflakes(): void
 	{
 		Date::setTestNow(now());
 		
 		$sequence = 0;
 		
-		$factory = new SonyflakeFactory(now(), 1, app(SonyflakesConfig::class), new class($sequence) implements ResolvesSequences {
-			public function __construct(public int &$sequence)
-			{
-			}
-			
-			public function next(int $timestamp): int
-			{
-				return $this->sequence++;
-			}
-		});
+		$factory = new SonyflakeFactory(now(), 1, app(SonyflakesConfig::class), new TestingSequenceResolver($sequence));
 		
 		$sonyflake_at_epoch1 = $factory->make();
 		

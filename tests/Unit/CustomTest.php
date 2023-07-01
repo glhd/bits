@@ -89,6 +89,18 @@ class CustomTest extends TestCase
 		$this->assertFalse($snowflake->is($bits));
 	}
 	
+	public function test_valid_types_can_be_coerced_to_bits(): void
+	{
+		$direct = Bits::fromId(1537200202186752);
+		$from_int = Bits::coerce(1537200202186752);
+		$from_string = Bits::coerce('1537200202186752');
+		$from_bits = Bits::coerce($direct);
+		
+		$this->assertTrue($direct->is($from_int));
+		$this->assertTrue($direct->is($from_string));
+		$this->assertTrue($direct->is($from_bits));
+	}
+	
 	public function test_it_generates_predictable_snowflakes(): void
 	{
 		Date::setTestNow(now());
