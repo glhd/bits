@@ -3,6 +3,19 @@
 return [
 	/*
 	|--------------------------------------------------------------------------
+	| Default Format
+	|--------------------------------------------------------------------------
+	|
+	| There are two default formats available: 'snowflake' or 'sonyflake'
+	| 
+	| Each have their own trade-offs. See https://github.com/glhd/bits
+	| for details about each format.
+	*/
+	
+	'format' => 'snowflake',
+	
+	/*
+	|--------------------------------------------------------------------------
 	| Epoch
 	|--------------------------------------------------------------------------
 	|
@@ -23,9 +36,10 @@ return [
 	| Worker ID
 	|--------------------------------------------------------------------------
 	|
-	| You can have up to 31 workers in each datacenter. If you deploy to
-	| multiple hosts, be sure to give each a unique worker ID to avoid
-	| concurrency issues.
+	| For Snowflakes, you can have up to 31 workers per datacenter. For
+	| Sonyflakes, you can have up to 65535 total workers across your entire 
+	| deployment. If you deploy to multiple hosts, be sure to give each a 
+	| unique worker ID to avoid concurrency issues.
 	*/
 	
 	'worker_id' => env('BITS_WORKER_ID'),
@@ -38,6 +52,8 @@ return [
 	| You can have up to 31 datacenters with the default snowflake
 	| configuration. If you are deploying to multiple datacenters, be sure to
 	| set this to a unique value in each.
+	| 
+	| Sonyflakes do not use datacenter IDs (and instead use larger worker IDs).
 	*/
 	
 	'datacenter_id' => env('BITS_DATACENTER_ID'),

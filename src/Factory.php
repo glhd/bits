@@ -3,67 +3,73 @@
 namespace Glhd\Bits;
 
 use Carbon\CarbonInterface;
+use Glhd\Bits\Config\GenericConfiguration;
+use Glhd\Bits\Config\WorkerIds;
+use Glhd\Bits\Contracts\Configuration;
+use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use InvalidArgumentException;
 use RuntimeException;
 
-class Factory
+class Factory implements MakesBits
 {
-	protected float $precise_epoch;
-
 	public function __construct(
-		public readonly CarbonInterface $epoch,
-		public readonly int $datacenter_id,
-		public readonly int $worker_id,
-		protected int $precision = 3,
+		protected CarbonInterface $epoch,
+		protected WorkerIds $ids,
+		protected Configuration $config,
 		protected ResolvesSequences $sequence = new CacheSequenceResolver(),
-		protected Bits $bits = new Bits(),
 	) {
 		$this->validateConfiguration();
-
-		$this->precise_epoch = $this->epoch->getPreciseTimestamp($this->precision);
 	}
 
-	public function make(): Snowflake
+	public function make(): Bits
 	{
 		[$timestamp, $sequence] = $this->waitForValidTimestampAndSequence();
+		
+		$values = $this->config->organize($this->ids, $timestamp, $sequence);
 
-		return new Snowflake($timestamp, $this->datacenter_id, $this->worker_id, $sequence, $this->bits);
+		return new Bits($this->config, ...$values);
 	}
 
-	public function makeFromTimestamp(CarbonInterface $timestamp): Snowflake
+	public function makeFromTimestamp(CarbonInterface $timestamp): Bits
 	{
 		$timestamp = $this->diffFromEpoch($timestamp);
 		$sequence = $this->sequence->next($timestamp);
 
-		if ($sequence > $this->bits->maxSequence()) {
+		if ($sequence > $this->config->maxSequence()) {
 			throw new InvalidArgumentException('Hit sequence limit for timestamp.');
 		}
+		
+		$values = $this->config->organize($this->ids, $timestamp, $sequence);
 
-		return new Snowflake($timestamp, $this->datacenter_id, $this->worker_id, $sequence, $this->bits);
+		return new Bits($this->config, ...$values);
 	}
 
-	public function makeFromTimestampForQuery(CarbonInterface $timestamp): Snowflake
+	public function makeFromTimestampForQuery(CarbonInterface $timestamp): Bits
 	{
-		return new Snowflake(
-			timestamp: $this->diffFromEpoch($timestamp),
-			datacenter_id: 0,
-			worker_id: 0,
-			sequence: 0,
-			bits: $this->bits,
-		);
+		// FIXME: We may need to move this into an optional interface
+		
+		// return new Bits(
+		// 	timestamp: $this->diffFromEpoch($timestamp),
+		// 	datacenter_id: 0,
+		// 	worker_id: 0,
+		// 	sequence: 0,
+		// 	config: $this->config,
+		// );
+		
+		return $this->make();
 	}
 
-	public function fromId(int|string $id): Snowflake
+	public function fromId(int|string $id): Bits
 	{
-		[$timestamp, $datacenter_id, $worker_id, $sequence] = $this->bits->parse((int) $id);
+		$values = $this->config->parse((int) $id);
 
-		return new Snowflake($timestamp, $datacenter_id, $worker_id, $sequence, $this->bits);
+		return new Bits($this->config, ...$values);
 	}
 
-	public function coerce(int|string|Snowflake $value): Snowflake
+	public function coerce(int|string|Bits $value): Bits
 	{
-		if (! ($value instanceof Snowflake)) {
+		if (! ($value instanceof Bits)) {
 			$value = $this->fromId($value);
 		}
 
@@ -77,7 +83,7 @@ class Factory
 		$sequence = $this->sequence->next($timestamp);
 
 		// If we've used all available numbers in sequence, we'll sleep and try again
-		if ($sequence > $this->bits->maxSequence()) {
+		if ($sequence > $this->config->maxSequence()) {
 			usleep(1);
 
 			return $this->waitForValidTimestampAndSequence();
@@ -88,24 +94,19 @@ class Factory
 
 	protected function diffFromEpoch(CarbonInterface $timestamp): int
 	{
-		return (int) round($timestamp->getPreciseTimestamp($this->precision) - $this->precise_epoch);
+		return $this->config->timestamp($this->epoch, $timestamp);
 	}
 
 	protected function validateConfiguration(): void
 	{
 		if (PHP_INT_SIZE < 8) {
-			throw new RuntimeException('Snowflakes require 64-bit integer support.');
+			throw new RuntimeException('Bits require 64-bit integer support.');
 		}
 
 		if ($this->epoch->isFuture()) {
-			throw new InvalidArgumentException('Snowflake epoch cannot be in the future.');
+			throw new InvalidArgumentException('Bits epoch cannot be in the future.');
 		}
-
-		if ($this->precision < 0 || $this->precision > 6) {
-			throw new InvalidArgumentException("Timestamp precision must be between 0 and 6 (got {$this->precision}).");
-		}
-
-		$this->bits->validateDatacenterId($this->datacenter_id);
-		$this->bits->validateWorkerId($this->worker_id);
+		
+		$this->config->validate($this->ids);
 	}
 }

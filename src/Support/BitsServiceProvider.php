@@ -2,13 +2,21 @@
 
 namespace Glhd\Bits\Support;
 
-use Glhd\Bits\Bits;
 use Glhd\Bits\CacheSequenceResolver;
+use Glhd\Bits\Config\GenericConfiguration;
+use Glhd\Bits\Config\WorkerIds;
+use Glhd\Bits\Contracts\Configuration;
+use Glhd\Bits\Contracts\MakesBits;
+use Glhd\Bits\Contracts\MakesSnowflakes;
+use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factory;
+use Glhd\Bits\Presets\Snowflakes;
+use Glhd\Bits\Presets\Sonyflakes;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 
 class BitsServiceProvider extends ServiceProvider
 {
@@ -17,16 +25,33 @@ class BitsServiceProvider extends ServiceProvider
 		$this->mergeConfigFrom($this->packageConfigFile(), 'bits');
 		
 		$this->app->alias(CacheSequenceResolver::class, ResolvesSequences::class);
+		$this->app->alias(Snowflakes::class, Configuration::class);
 		
-		$this->app->singleton(Factory::class, function(Container $container) {
-			return new Factory(
-				epoch: Date::parse(config('bits.epoch'))->startOfDay(),
-				datacenter_id: (int) (config('bits.datacenter_id') ?? random_int(0, 31)),
-				worker_id: (int) (config('bits.worker_id') ?? random_int(0, 31)),
-				precision: (int) (config('bits.precision') ?? 3),
-				sequence: $container->make(ResolvesSequences::class),
-				bits: $container->make(Bits::class),
-			);
+		$this->app->singleton(Snowflakes::class);
+		$this->app->singleton(Sonyflakes::class);
+		
+		$this->app->singleton(MakesSnowflakes::class, function(Container $container) {
+			$config = config('bits');
+			$sequence = $container->make(ResolvesSequences::class);
+			
+			return $container->make(Snowflakes::class)->factory($config, $sequence);
+		});
+		
+		$this->app->singleton(MakesSonyflakes::class, function(Container $container) {
+			$config = config('bits');
+			$sequence = $container->make(ResolvesSequences::class);
+			
+			return $container->make(Sonyflakes::class)->factory($config, $sequence);
+		});
+		
+		$this->app->singleton(MakesBits::class, function(Container $container) {
+			$format = config('bits.format', 'snowflake');
+			
+			return match($format) {
+				'snowflake', 'snowflakes' => $container->make(MakesSnowflakes::class),
+				'sonyflake', 'sonyflakes' => $container->make(MakesSonyflakes::class),
+				default => throw new InvalidArgumentException("Unknown bits format: '{$format}'"),
+			};
 		});
 	}
 	

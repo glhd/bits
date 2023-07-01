@@ -1,15 +1,16 @@
 <?php
 
-use Glhd\Bits\Factory;
+use Glhd\Bits\Bits;
+use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Snowflake;
 
 if (! function_exists('snowflake')) { // @codeCoverageIgnore
-	function snowflake(null|int|string|Snowflake $value = null): Snowflake|Factory
+	function snowflake(null|int|string|Bits $value = null): Snowflake|MakesSnowflakes
 	{
 		if (null === $value) {
-			return app(Factory::class);
+			return app(MakesSnowflakes::class);
 		}
 		
-		return app(Factory::class)->coerce($value);
+		return app(MakesSnowflakes::class)->coerce($value);
 	}
 }

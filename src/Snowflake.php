@@ -2,72 +2,36 @@
 
 namespace Glhd\Bits;
 
+use Glhd\Bits\Config\GenericConfiguration;
+use Glhd\Bits\Config\WorkerIds;
+use Glhd\Bits\Presets\Snowflakes;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Grammar;
 
-// This adds support for the Expression interface in earlier versions of Laravel
-if (! interface_exists('\\Illuminate\\Contracts\\Database\\Query\\Expression')) {
-	require_once __DIR__.'/../compat/illuminate_query_expression.php';
-}
-
-class Snowflake implements Expression, Castable
+class Snowflake extends Bits
 {
-	public static function make(): Snowflake
-	{
-		return app(Factory::class)->make();
-	}
-	
-	public static function fromId(int|string $id): Snowflake
-	{
-		return app(Factory::class)->fromId($id);
-	}
-	
-	public static function coerce(int|string|Snowflake $value): Snowflake
-	{
-		return app(Factory::class)->coerce($value);
-	}
-	
-	public static function castUsing(array $arguments): string
-	{
-		return SnowflakeCast::class;
-	}
-
 	public function __construct(
-		public readonly int $timestamp,
+		int $timestamp,
 		public readonly int $datacenter_id,
 		public readonly int $worker_id,
-		public readonly int $sequence,
-		protected Bits $bits = new Bits(),
+		int $sequence,
+		GenericConfiguration $config,
 	) {
-		$this->validateConfiguration();
+		parent::__construct(
+			$config,
+			0,
+			$timestamp,
+			$this->datacenter_id,
+			$this->worker_id,
+			$sequence,
+		);
 	}
 
 	public function id(): int
 	{
-		return $this->bits->combine($this->timestamp, $this->datacenter_id, $this->worker_id, $this->sequence);
-	}
-
-	public function is(Snowflake $other): bool
-	{
-		return $other->id() === $this->id();
-	}
-
-	public function getValue(?Grammar $grammar = null): int
-	{
-		return $this->id();
-	}
-
-	public function __toString(): string
-	{
-		return (string) $this->id();
-	}
-
-	protected function validateConfiguration(): void
-	{
-		$this->bits->validateTimestamp($this->timestamp);
-		$this->bits->validateDatacenterId($this->datacenter_id);
-		$this->bits->validateWorkerId($this->worker_id);
-		$this->bits->validateSequence($this->sequence);
+		return $this->id ??= $this->config->combine(
+			0, $this->timestamp, $this->datacenter_id, $this->worker_id, $this->sequence
+		);
 	}
 }

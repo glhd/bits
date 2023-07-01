@@ -4,7 +4,7 @@ namespace Glhd\Bits\Tests\Unit;
 
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factory;
-use Glhd\Bits\Snowflake;
+use Glhd\Bits\Bits;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Facades\Date;
@@ -19,7 +19,7 @@ class SnowflakeTest extends TestCase
 		$iterations = 10_000;
 		
 		for ($i = 0; $i < $iterations; $i++) {
-			$exists[Snowflake::make()->id()] = true;
+			$exists[Bits::make()->id()] = true;
 		}
 		
 		$this->assertCount($iterations, $exists);
@@ -27,7 +27,7 @@ class SnowflakeTest extends TestCase
 	
 	public function test_it_generates_snowflakes_in_the_expected_format(): void
 	{
-		$snowflake = Snowflake::make()->id();
+		$snowflake = Bits::make()->id();
 		
 		$this->assertGreaterThan(0, $snowflake);
 		$this->assertLessThanOrEqual(9_223_372_036_854_775_807, $snowflake);
@@ -50,7 +50,7 @@ class SnowflakeTest extends TestCase
 	
 	public function test_it_can_parse_an_existing_snowflake(): void
 	{
-		$snowflake = Snowflake::fromId(1537200202186752);
+		$snowflake = Bits::fromId(1537200202186752);
 		
 		$this->assertEquals(0, $snowflake->datacenter_id);
 		$this->assertEquals(0, $snowflake->worker_id);
