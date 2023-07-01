@@ -10,7 +10,7 @@ use Illuminate\Database\Grammar;
 use Illuminate\Support\Collection;
 
 // This adds support for the Expression interface in earlier versions of Laravel
-if (! interface_exists('\\Illuminate\\Contracts\\Database\\Query\\Expression')) {
+if (! interface_exists(Expression::class)) {
 	require_once __DIR__.'/../compat/Illuminate/Contracts/Database/Query/Expression.php';
 }
 

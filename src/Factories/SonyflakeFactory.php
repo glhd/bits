@@ -50,13 +50,6 @@ class SonyflakeFactory extends BitsFactory implements MakesSonyflakes
 		return new Sonyflake($timestamp, $sequence, $this->machine_id, $this->config);
 	}
 	
-	public function makeFromTimestampForQuery(CarbonInterface $timestamp): Bits
-	{
-		// FIXME: We may need to move this into an optional interface
-		
-		return $this->make();
-	}
-	
 	public function fromId(int|string $id): Sonyflake
 	{
 		[$timestamp, $sequence, $machine_id] = $this->config->parse((int) $id);

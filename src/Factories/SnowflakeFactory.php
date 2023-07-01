@@ -28,7 +28,6 @@ class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 	) {
 		parent::__construct(
 			epoch: $epoch,
-			ids: new WorkerIds($datacenter_id, $worker_id),
 			config: $config,
 			sequence: $sequence,
 		);
