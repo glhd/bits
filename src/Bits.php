@@ -3,7 +3,9 @@
 namespace Glhd\Bits;
 
 use Glhd\Bits\Contracts\Configuration;
-use Glhd\Bits\Factories\BitsFactory;
+use Glhd\Bits\Contracts\MakesBits;
+use Glhd\Bits\Contracts\MakesSnowflakes;
+use Glhd\Bits\Contracts\MakesSonyflakes;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Grammar;
@@ -23,25 +25,28 @@ class Bits implements Expression, Castable
 	
 	public static function make(): Bits
 	{
-		return app(BitsFactory::class)->make();
+		return app(MakesBits::class)->make();
 	}
 	
 	public static function fromId(int|string $id): Bits
 	{
-		return app(BitsFactory::class)->fromId($id);
+		return app(MakesBits::class)->fromId($id);
 	}
 	
 	public static function coerce(int|string|Bits $value): Bits
 	{
-		return app(BitsFactory::class)->coerce($value);
+		return app(MakesBits::class)->coerce($value);
 	}
 	
 	public static function castUsing(array $arguments): string
 	{
-		// FIXME: Accept an optional preset
-		return BitsCast::class;
+		return match (reset($arguments)) {
+			'snowflake', 'snowflakes' => new BitsCast(app(MakesSnowflakes::class)),
+			'sonyflake', 'sonyflakes' => new BitsCast(app(MakesSonyflakes::class)),
+			default => BitsCast::class,
+		};
 	}
-
+	
 	public function __construct(
 		array $values,
 		protected Configuration $config
@@ -50,22 +55,22 @@ class Bits implements Expression, Castable
 		
 		$this->values = new Collection($values);
 	}
-
+	
 	public function id(): int
 	{
 		return $this->id ??= $this->config->combine(...$this->values);
 	}
-
+	
 	public function is(Bits $other): bool
 	{
 		return ($other instanceof static::class) && $other->id() === $this->id();
 	}
-
+	
 	public function getValue(?Grammar $grammar = null): int
 	{
 		return $this->id();
 	}
-
+	
 	public function __toString(): string
 	{
 		return (string) $this->id();
