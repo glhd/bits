@@ -2,15 +2,8 @@
 
 namespace Glhd\Bits;
 
-use Glhd\Bits\Config\GenericConfiguration;
-use Glhd\Bits\Config\WorkerIds;
-use Glhd\Bits\Contracts\Configuration;
-use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Presets\Snowflakes;
-use Illuminate\Contracts\Database\Eloquent\Castable;
-use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Database\Grammar;
 
 class Snowflake extends Bits
 {
@@ -45,7 +38,11 @@ class Snowflake extends Bits
 	public function id(): int
 	{
 		return $this->id ??= $this->config->combine(
-			0, $this->timestamp, $this->datacenter_id, $this->worker_id, $this->sequence
+			0,
+			$this->timestamp,
+			$this->datacenter_id,
+			$this->worker_id,
+			$this->sequence
 		);
 	}
 }

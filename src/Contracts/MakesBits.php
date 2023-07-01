@@ -4,8 +4,6 @@ namespace Glhd\Bits\Contracts;
 
 use Carbon\CarbonInterface;
 use Glhd\Bits\Bits;
-use Glhd\Bits\Config\WorkerIds;
-use Illuminate\Support\Collection;
 
 interface MakesBits
 {

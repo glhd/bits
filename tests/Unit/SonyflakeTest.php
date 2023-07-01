@@ -34,7 +34,7 @@ class SonyflakeTest extends TestCase
 		$this->assertCount($iterations, $exists);
 	}
 	
-	public function test_it_generates_Sonyflakes_in_the_expected_format(): void
+	public function test_it_generates_sonyflakes_in_the_expected_format(): void
 	{
 		$Sonyflake = Sonyflake::make()->id();
 		
@@ -63,7 +63,7 @@ class SonyflakeTest extends TestCase
 		$this->assertEquals(61469, $sonyflake->machine_id);
 	}
 	
-	public function test_it_generates_predictable_Sonyflakes(): void
+	public function test_it_generates_predictable_sonyflakes(): void
 	{
 		Date::setTestNow(now());
 		

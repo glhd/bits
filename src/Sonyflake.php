@@ -2,8 +2,6 @@
 
 namespace Glhd\Bits;
 
-use Glhd\Bits\Config\GenericConfiguration;
-use Glhd\Bits\Config\WorkerIds;
 use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Presets\Sonyflakes;
 
@@ -39,7 +37,9 @@ class Sonyflake extends Bits
 	public function id(): int
 	{
 		return $this->id ??= $this->config->combine(
-			$this->timestamp, $this->sequence, $this->machine_id
+			$this->timestamp,
+			$this->sequence,
+			$this->machine_id
 		);
 	}
 }
