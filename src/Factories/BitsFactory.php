@@ -11,7 +11,7 @@ use InvalidArgumentException;
 use RuntimeException;
 
 // Add support for Sleep class in older versions of Laravel
-if (!class_exists(Sleep::class)) {
+if (! class_exists(Sleep::class)) {
 	require_once __DIR__.'/../../compat/Illuminate/Support/Sleep.php';
 }
 

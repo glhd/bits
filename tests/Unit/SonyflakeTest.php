@@ -3,7 +3,6 @@
 namespace Glhd\Bits\Tests\Unit;
 
 use Carbon\CarbonInterval;
-use Glhd\Bits\Bits;
 use Glhd\Bits\Config\SonyflakesConfig;
 use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;

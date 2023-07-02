@@ -3,7 +3,6 @@
 namespace Glhd\Bits\Tests\Unit;
 
 use Carbon\CarbonInterval;
-use Glhd\Bits\Bits;
 use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
@@ -108,10 +107,10 @@ class SnowflakeTest extends TestCase
 		$sequence = 0;
 		
 		$factory = new SnowflakeFactory(
-			epoch: now(), 
-			datacenter_id: 1, 
-			worker_id: 15, 
-			config: app(SnowflakesConfig::class), 
+			epoch: now(),
+			datacenter_id: 1,
+			worker_id: 15,
+			config: app(SnowflakesConfig::class),
 			sequence: new TestingSequenceResolver($sequence)
 		);
 		

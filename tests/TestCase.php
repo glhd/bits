@@ -9,7 +9,7 @@ use Illuminate\Support\Sleep;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RuntimeException;
 
-if (!class_exists(Sleep::class)) {
+if (! class_exists(Sleep::class)) {
 	require_once __DIR__.'/../compat/Illuminate/Support/Sleep.php';
 }
 

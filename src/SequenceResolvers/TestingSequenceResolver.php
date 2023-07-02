@@ -10,7 +10,7 @@ class TestingSequenceResolver implements ResolvesSequences
 	
 	public function __construct(int &$sequence)
 	{
-		$this->sequence =& $sequence;
+		$this->sequence = &$sequence;
 	}
 	
 	public function next(int $timestamp): int
