@@ -99,7 +99,7 @@ class Example extends Model
     ];
 }
 
-$example = Example::make();
+$example = Example::create();
 
 $example->id instanceof Snowflake; // true
 
