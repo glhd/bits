@@ -2,13 +2,11 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
-use Glhd\Bits\Config\WorkerIds;
 use Glhd\Bits\SequenceResolvers\CacheSequenceResolver;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Cache\ArrayStore;
 use Illuminate\Cache\Repository;
 use Illuminate\Support\Facades\Date;
-use LogicException;
 
 class CacheSequenceResolverTest extends TestCase
 {
@@ -18,7 +16,7 @@ class CacheSequenceResolverTest extends TestCase
 		
 		Date::setTestNow(now());
 		
-		for($i = 0; $i < 100; $i++) {
+		for ($i = 0; $i < 100; $i++) {
 			$this->assertEquals($i, $resolver->next(now()->getPreciseTimestamp(3)));
 		}
 		
