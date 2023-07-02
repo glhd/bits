@@ -8,7 +8,12 @@ trait HasSnowflakes
 {
 	protected function initializeHasSnowflakes(): void
 	{
-		$this->usesUniqueIds = true;
+		if (property_exists($this, 'usesUniqueIds')) {
+			$this->usesUniqueIds = true;
+			return;
+		}
+		
+		$this->setAttribute($this->getKeyName(), $this->newUniqueId());
 	}
 	
 	public function uniqueIds()
