@@ -3,16 +3,21 @@
 namespace Glhd\Bits\SequenceResolvers;
 
 use Glhd\Bits\Contracts\ResolvesSequences;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Contracts\Cache\Repository;
 
 class CacheSequenceResolver implements ResolvesSequences
 {
+	public function __construct(
+		protected Repository $cache
+	) {
+	}
+	
 	public function next(int $timestamp): int
 	{
-		$key = "bits-seq:{$timestamp}";
-
-		Cache::add($key, 0, now()->addSeconds(10));
-
-		return Cache::increment($key) - 1;
+		$key = "glhd-bits-seq:{$timestamp}";
+		
+		$this->cache->add($key, 0, now()->addSeconds(10));
+		
+		return $this->cache->increment($key) - 1;
 	}
 }
