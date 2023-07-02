@@ -27,6 +27,8 @@ class SonyflakeTest extends TestCase
 	
 	public function test_it_generates_unique_ids(): void
 	{
+		Date::setTestNow(now());
+		
 		$exists = [];
 		$iterations = 10_000;
 		

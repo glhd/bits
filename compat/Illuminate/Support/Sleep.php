@@ -70,7 +70,7 @@ class Sleep
 	
 	public static function assertNeverSlept()
 	{
-		return static::assertSleptTimes(0);
+		PHPUnit::assertCount(0, static::$sequence, 'Expected to have never slept.');
 	}
 	
 	public static function whenFakingSleep($callback)

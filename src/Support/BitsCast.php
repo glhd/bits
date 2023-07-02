@@ -15,6 +15,10 @@ class BitsCast implements CastsAttributes
 	
 	public function get($model, string $key, $value, array $attributes)
 	{
+		if (null === $value) {
+			return null;
+		}
+		
 		return $this->factory->coerce($value);
 	}
 	

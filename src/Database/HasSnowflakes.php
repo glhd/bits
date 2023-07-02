@@ -6,7 +6,7 @@ use Glhd\Bits\Snowflake;
 
 trait HasSnowflakes
 {
-	protected function initializeHasSnowflakeKey(): void
+	protected function initializeHasSnowflakes(): void
 	{
 		$this->usesUniqueIds = true;
 	}
