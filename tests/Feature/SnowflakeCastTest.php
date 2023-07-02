@@ -5,7 +5,7 @@ namespace Glhd\Bits\Tests\Feature;
 use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
-use Glhd\Bits\Database\HasSnowflakeKey;
+use Glhd\Bits\Database\HasSnowflakes;
 use Glhd\Bits\Factories\SnowflakeFactory;
 use Glhd\Bits\Snowflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
@@ -58,7 +58,7 @@ class SnowflakeCastTest extends TestCase
 
 class TestModel extends Model
 {
-	use HasSnowflakeKey;
+	use HasSnowflakes;
 	
 	protected $casts = [
 		'id' => Snowflake::class,

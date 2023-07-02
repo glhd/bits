@@ -67,23 +67,31 @@ class Snowflake
 }
 ```
 
-You can use Snowflakes in Laravel models by just casting to `Snowflake::class`
-and Snowflakes implement `__toString()` and the Laravel `Query\Expression` interface
-so that you can use that easily as-is throughout your app.
+You can also use the `snowflake()` or `sonyflake()` global helper functions,
+if you prefer.
+
+All Bits IDs implement `__toString()` and the Laravel `Query\Expression` interface so that you
+can easily pass them around without juggling types.
 
 ### Usage with Eloquent Models
 
+Bits provides a `HasSnowflakes` trait that behaves the same as 
+[Eloquent’s `HasUuids` and `HasUlids` traits](https://laravel.com/docs/10.x/eloquent#uuid-and-ulid-keys). 
+Simply add `HasSnowflakes` to your model, and whenever they're inserted or upserted, and new Snowflake
+will be generated for you.
+
+You can also use `Snowflake` or `Sonyflake` as in your Eloquent `$casts` array to have
+that attribute automatically cast to a Bits instance.
+
 ```php
-use Glhd\Bits\Database\HasSnowflakeKey;
+use Glhd\Bits\Database\HasSnowflakes;
 use Glhd\Bits\Snowflake;
 use Illuminate\Database\Eloquent\Model;
 
 class Example extends Model
 {
-    // If you use this trait, each model will have a snowflake ID the moment
-    // it is instantiated. You should set your primary key to be an unsigned big
-    // integer with a unique constraint (but no auto-increment).
-    use HasSnowflakeKey;
+    // Auto-generate Snowflake for new models
+    use HasSnowflakes;
     
     // Any attribute can be cast to a `Snowflake` (or `Sonyflake`)
     protected $casts = [
@@ -98,21 +106,23 @@ $example->id instanceof Snowflake; // true
 echo $example->id; // 65898467809951744
 ```
 
+## About 64-bit Unique IDs
+
 ### Snowflake format
 
 ```
 0 0000001100100101110101100110111100101011 01011 01111 000000011101
 ┳ ━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━ ━━━┳━ ━┳━━━ ━┳━━━━━━━━━━
-┗━ unused bit     ┗━ timestamp (41 bits)      ┃   ┃     ┗━ "sequence" (12 bits)
-                         datacenter (5 bits) ━┛   ┗━ worker (5 bits)
+┗━ unused bit     ┗━ timestamp (41)           ┃   ┃     ┗━ sequence (12)
+                              datacenter (5) ━┛   ┗━ worker (5)
 ```
 
 ### Sonyflake format
 
 ```
-000000011001001011101011001101111001010 11010110 1111000000011101
-━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ━━━━━━┳━ ━┳━━━━━━━━━━━━━━
- ┗ timestamp (39 bits)    "sequence" (8 bits) ┛   ┗ machine (16 bits)
+0 000000011001001011101011001101111001010 11010110 1111000000011101
+┳ ━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ━━━━━━┳━ ━┳━━━━━━━━━━━━━━
+┗━ sign   ┗ timestamp (39)         sequence (8) ┛   ┗ machine (16)
 ```
 
 Both of these IDs are represented by the same 64-bit integer, `56705782302306333`,
