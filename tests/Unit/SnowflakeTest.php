@@ -2,6 +2,7 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
+use Carbon\CarbonInterval;
 use Glhd\Bits\Bits;
 use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
@@ -13,6 +14,7 @@ use Glhd\Bits\Sonyflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Sleep;
 
 class SnowflakeTest extends TestCase
 {
@@ -146,5 +148,26 @@ class SnowflakeTest extends TestCase
 		$this->assertEquals($snowflake_at_2ms->datacenter_id, 1);
 		$this->assertEquals($snowflake_at_2ms->worker_id, 15);
 		$this->assertEquals($snowflake_at_2ms->sequence, 3);
+	}
+	
+	public function test_it_sleeps_1ms_when_sequence_limit_is_reached(): void
+	{
+		Date::setTestNow(now());
+		
+		$sequence = 4095;
+		
+		Sleep::whenFakingSleep(function() use (&$sequence) {
+			$sequence = 0;
+		});
+		
+		$this->app->instance(ResolvesSequences::class, new TestingSequenceResolver($sequence));
+		
+		Snowflake::make();
+		
+		Sleep::assertNeverSlept();
+		
+		Snowflake::make();
+		
+		Sleep::assertSlept(fn(CarbonInterval $interval) => $interval->totalMicroseconds === 1000);
 	}
 }

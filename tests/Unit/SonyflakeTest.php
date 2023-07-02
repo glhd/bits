@@ -2,6 +2,8 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
+use Carbon\CarbonInterval;
+use Glhd\Bits\Bits;
 use Glhd\Bits\Config\SonyflakesConfig;
 use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
@@ -11,6 +13,7 @@ use Glhd\Bits\Sonyflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Sleep;
 
 class SonyflakeTest extends TestCase
 {
@@ -122,5 +125,26 @@ class SonyflakeTest extends TestCase
 		$this->assertEquals($sonyflake_at_20ms->timestamp, 2);
 		$this->assertEquals($sonyflake_at_10ms->machine_id, 1);
 		$this->assertEquals($sonyflake_at_20ms->sequence, 3);
+	}
+	
+	public function test_it_sleeps_10ms_when_sequence_limit_is_reached(): void
+	{
+		Date::setTestNow(now());
+		
+		$sequence = 255;
+		
+		Sleep::whenFakingSleep(function() use (&$sequence) {
+			$sequence = 0;
+		});
+		
+		$this->app->instance(ResolvesSequences::class, new TestingSequenceResolver($sequence));
+		
+		Sonyflake::make();
+		
+		Sleep::assertNeverSlept();
+		
+		Sonyflake::make();
+		
+		Sleep::assertSlept(fn(CarbonInterval $interval) => $interval->totalMicroseconds === 10000);
 	}
 }

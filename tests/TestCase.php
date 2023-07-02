@@ -19,6 +19,8 @@ abstract class TestCase extends Orchestra
 	{
 		parent::setUp();
 		
+		Sleep::fake();
+		
 		Sleep::whenFakingSleep(function(CarbonInterval $duration) {
 			if (! Date::hasTestNow()) {
 				throw new RuntimeException('Trying to sleep but no "test now" has been set.');

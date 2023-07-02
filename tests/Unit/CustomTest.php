@@ -2,6 +2,7 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
+use Carbon\CarbonInterval;
 use Glhd\Bits\Bits;
 use Glhd\Bits\Config\GenericConfig;
 use Glhd\Bits\Config\Segment;
@@ -16,6 +17,7 @@ use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Sleep;
 
 class CustomTest extends TestCase
 {
@@ -138,6 +140,39 @@ class CustomTest extends TestCase
 		$this->assertEquals($bits_at_2us->values[0], 2);
 		$this->assertEquals($bits_at_2us->values[1], 7);
 		$this->assertEquals($bits_at_2us->values[2], 3);
+	}
+	
+	public function test_it_waits_for_valid_sequence_when_limit_is_reached(): void
+	{
+		Date::setTestNow(now());
+		
+		$sequence = 1023;
+		
+		Sleep::whenFakingSleep(function() use (&$sequence) {
+			$sequence = 0;
+		});
+		
+		$factory = $this->getBitsFactory(14, new TestingSequenceResolver($sequence));
+		
+		$last_in_sequence = $factory->make();
+		
+		$this->assertEquals(1023, $last_in_sequence->values[2]);
+		
+		$first_after_sleep = $factory->make();
+		
+		$this->assertEquals(0, $first_after_sleep->values[2]);
+		
+		$sequence = 1023;
+		
+		$last_in_after_sleep = $factory->make();
+		
+		$this->assertEquals(1023, $last_in_after_sleep->values[2]);
+		
+		$first_after_second_sleep = $factory->make();
+		
+		$this->assertEquals(0, $first_after_second_sleep->values[2]);
+		
+		Sleep::assertSlept(fn(CarbonInterval $interval) => $interval->totalMicroseconds === 1, 2);
 	}
 	
 	protected function getBitsFactory(int $id, ResolvesSequences $sequence = null): GenericFactory
