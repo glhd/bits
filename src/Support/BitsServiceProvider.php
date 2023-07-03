@@ -26,6 +26,8 @@ class BitsServiceProvider extends ServiceProvider
 		
 		$this->app->alias(CacheSequenceResolver::class, ResolvesSequences::class);
 		$this->app->alias(SnowflakesConfig::class, Configuration::class);
+		$this->app->alias(SnowflakeFactory::class, MakesSnowflakes::class);
+		$this->app->alias(SonyflakeFactory::class, MakesSonyflakes::class);
 		
 		$this->app->singleton(SnowflakesConfig::class);
 		$this->app->singleton(SonyflakesConfig::class);

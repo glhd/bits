@@ -169,4 +169,17 @@ class SnowflakeTest extends TestCase
 		
 		Sleep::assertSlept(fn(CarbonInterval $interval) => $interval->totalMicroseconds === 1000);
 	}
+	
+	public function test_a_snowflake_can_be_created_for_a_specific_timestamp(): void
+	{
+		$factory = $this->app->make(MakesSnowflakes::class);
+		
+		$snowflake = $factory->makeFromTimestamp($factory->epoch->toImmutable()->addMillisecond());
+		
+		$this->assertEquals(1, $snowflake->timestamp);
+		
+		$snowflake = $factory->makeFromTimestamp($factory->epoch->toImmutable()->addMilliseconds(42));
+		
+		$this->assertEquals(42, $snowflake->timestamp);
+	}
 }

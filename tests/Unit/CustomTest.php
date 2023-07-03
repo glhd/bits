@@ -13,6 +13,7 @@ use Glhd\Bits\Factories\GenericFactory;
 use Glhd\Bits\SequenceResolvers\InMemorySequenceResolver;
 use Glhd\Bits\SequenceResolvers\TestingSequenceResolver;
 use Glhd\Bits\Snowflake;
+use Glhd\Bits\Sonyflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Collection;
@@ -173,6 +174,32 @@ class CustomTest extends TestCase
 		$this->assertEquals(0, $first_after_second_sleep->values[2]);
 		
 		Sleep::assertSlept(fn(CarbonInterval $interval) => $interval->totalMicroseconds === 1, 2);
+	}
+	
+	public function test_custom_bits_can_be_coerced_to_snowflakes_or_sonyflakes(): void
+	{
+		$bits = Bits::make();
+		
+		$snowflake = Snowflake::coerce($bits);
+		$sonyflake = Sonyflake::coerce($bits);
+		
+		$this->assertEquals($bits->id(), $snowflake->id());
+		$this->assertEquals($bits->id(), $sonyflake->id());
+	}
+	
+	public function test_a_bit_can_be_created_for_a_specific_timestamp(): void
+	{
+		Date::setTestNow(now());
+		
+		$factory = $this->getBitsFactory(14);
+		
+		$bits = $factory->makeFromTimestamp(now()->addMicrosecond());
+		
+		$this->assertEquals(1, $bits->values[0]);
+		
+		$bits = $factory->makeFromTimestamp(now()->addMicroseconds(42));
+		
+		$this->assertEquals(42, $bits->values[0]);
 	}
 	
 	protected function getBitsFactory(int $id, ResolvesSequences $sequence = null): GenericFactory

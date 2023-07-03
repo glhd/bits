@@ -18,7 +18,7 @@ if (! class_exists(Sleep::class)) {
 abstract class BitsFactory implements MakesBits
 {
 	public function __construct(
-		protected CarbonInterface $epoch,
+		public readonly CarbonInterface $epoch,
 		protected Configuration $config,
 		protected ResolvesSequences $sequence,
 	) {
