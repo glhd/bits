@@ -45,7 +45,7 @@
   "extra": {
     "laravel": {
       "providers": [
-          "Glhd\\Bits\\BitsServiceProvider"
+          "Glhd\\Bits\\Support\\BitsServiceProvider"
       ]
     }
   },
