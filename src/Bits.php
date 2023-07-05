@@ -9,15 +9,17 @@ use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Support\BitsCast;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Database\Grammar;
 use Illuminate\Support\Collection;
+use JsonSerializable;
 
 // This adds support for the Expression interface in earlier versions of Laravel
 if (! interface_exists(Expression::class)) {
 	require_once __DIR__.'/../compat/Illuminate/Contracts/Database/Query/Expression.php';
 }
 
-class Bits implements Expression, Castable
+class Bits implements Expression, Castable, Jsonable, JsonSerializable
 {
 	/** @var \Illuminate\Support\Collection<int, int> $values */
 	public readonly Collection $values;
@@ -72,6 +74,16 @@ class Bits implements Expression, Castable
 	}
 	
 	public function __toString(): string
+	{
+		return (string) $this->id();
+	}
+	
+	public function toJson($options = 0): string
+	{
+		return json_encode($this->jsonSerialize(), $options);
+	}
+	
+	public function jsonSerialize(): mixed
 	{
 		return (string) $this->id();
 	}

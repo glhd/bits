@@ -182,4 +182,14 @@ class SnowflakeTest extends TestCase
 		
 		$this->assertEquals(42, $snowflake->timestamp);
 	}
+	
+	public function test_a_snowflake_can_be_serialized_to_json(): void
+	{
+		$snowflake = Snowflake::make();
+		
+		$string = '"'.(string) $snowflake.'"';
+		
+		$this->assertEquals($string, $snowflake->toJson());
+		$this->assertEquals($string, json_encode($snowflake));
+	}
 }
