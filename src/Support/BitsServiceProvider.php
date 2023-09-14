@@ -14,6 +14,7 @@ use Glhd\Bits\Factories\SonyflakeFactory;
 use Glhd\Bits\SequenceResolvers\CacheSequenceResolver;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\DateFactory;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
@@ -74,6 +75,14 @@ class BitsServiceProvider extends ServiceProvider
 		require_once __DIR__.'/helpers.php';
 		
 		$this->bootConfig();
+		
+		Blueprint::macro('snowflake', function(string $column) {
+			return $this->unsignedBigInteger($column);
+		});
+		
+		Blueprint::macro('snowflakeId', function(string $column = 'id') {
+			return $this->unsignedBigInteger($column)->primary();
+		});
 	}
 	
 	protected function bootConfig(): self
