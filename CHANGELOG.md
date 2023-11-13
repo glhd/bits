@@ -5,6 +5,8 @@ format. This project adheres to [Semantic Versioning](https://semver.org/spec/v2
 
 ## [Unreleased]
 
+## [0.2.0] - 2023-11-13
+
 ## [0.1.1] - 2023-07-09
 
 ## [0.1.0] - 2023-07-05
@@ -28,7 +30,9 @@ format. This project adheres to [Semantic Versioning](https://semver.org/spec/v2
 -   `Fixed` for any bug fixes. 
 -   `Security` in case of vulnerabilities.
 
-[Unreleased]: https://github.com/glhd/bits/compare/0.1.1...HEAD
+[Unreleased]: https://github.com/glhd/bits/compare/0.2.0...HEAD
+
+[0.2.0]: https://github.com/glhd/bits/compare/0.1.1...0.2.0
 
 [0.1.1]: https://github.com/glhd/bits/compare/0.1.0...0.1.1
 
