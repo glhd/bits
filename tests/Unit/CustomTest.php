@@ -17,6 +17,7 @@ use Glhd\Bits\Sonyflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Collection;
+use Illuminate\Support\DateFactory;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Sleep;
 
@@ -212,6 +213,7 @@ class CustomTest extends TestCase
 				Segment::id('id', 4),
 				Segment::sequence('sequence', 10),
 			]),
+			date: $this->app->make(DateFactory::class),
 		);
 		
 		return new GenericFactory(

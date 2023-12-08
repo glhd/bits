@@ -6,7 +6,7 @@ use BadMethodCallException;
 use Carbon\CarbonInterface;
 use Glhd\Bits\Contracts\Configuration;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Date;
+use Illuminate\Support\DateFactory;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -21,6 +21,7 @@ class GenericConfig implements Configuration
 		protected int $precision,
 		protected int $unit,
 		protected Collection $segments,
+		protected DateFactory $date,
 	) {
 		$this->setTimestampAndSequenceSegments();
 		$this->setPositionsAndOffsets();
@@ -91,7 +92,7 @@ class GenericConfig implements Configuration
 		$seconds = (int) $timestamp / $multiplier;
 		$microseconds = ($timestamp % $multiplier) * $multiplier;
 		
-		return Date::createFromTimestamp($seconds, $epoch->timezone)
+		return $this->date->createFromTimestamp($seconds, $epoch->timezone)
 			->toImmutable()
 			->microseconds(0)
 			->addMicroseconds($microseconds);
