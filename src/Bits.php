@@ -56,7 +56,8 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	
 	public function __construct(
 		array $values,
-		protected Configuration $config
+		protected Configuration $config,
+		protected CarbonInterface $epoch,
 	) {
 		$this->config->validate($values);
 		
@@ -81,7 +82,7 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	public function toCarbon(): CarbonInterface
 	{
 		return $this->config->carbon(
-			epoch: app(MakesBits::class)->epoch,
+			epoch: $this->epoch,
 			timestamp: $this->values[$this->config->indexOf(SegmentType::Timestamp)], 
 		);
 	}
