@@ -80,24 +80,10 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	
 	public function toCarbon(): CarbonInterface
 	{
-		$precision = $this->config->precision();
-		$multiplier = pow(10, 6 - $precision);
-		$unit = $this->config->unit();
-		$epoch = app(MakesBits::class)->epoch;
-		
-		$relative_timestamp = $this->values[$this->config->indexOf(SegmentType::Timestamp)];
-		
-		$reconstructed_precise_timestamp = ($relative_timestamp * $unit) + $epoch->getPreciseTimestamp($precision);
-		
-		$reconstructed_timestamp = (int) $reconstructed_precise_timestamp / $multiplier;
-		
-		$remainder_in_precision = $reconstructed_precise_timestamp % $multiplier;
-		$remainder_in_microseconds = $remainder_in_precision * $multiplier;
-		
-		return Date::createFromTimestamp($reconstructed_timestamp, $epoch->timezone)
-			->toImmutable()
-			->microseconds(0)
-			->addMicroseconds($remainder_in_microseconds);
+		return $this->config->carbon(
+			epoch: app(MakesBits::class)->epoch,
+			timestamp: $this->values[$this->config->indexOf(SegmentType::Timestamp)], 
+		);
 	}
 	
 	public function __toString(): string

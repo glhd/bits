@@ -6,6 +6,7 @@ use BadMethodCallException;
 use Carbon\CarbonInterface;
 use Glhd\Bits\Contracts\Configuration;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -79,6 +80,23 @@ class GenericConfig implements Configuration
 		return (int) round(($this->getPreciseTimestamp($timestamp) - $this->getPreciseTimestamp($epoch)) / $this->unit);
 	}
 	
+	public function carbon(CarbonInterface $epoch, int $timestamp): CarbonInterface
+	{
+		$multiplier = pow(10, 6 - $this->precision);
+		
+		// First, convert the timestamp from a relative integer to a full-precision timestamp
+		$timestamp = ($timestamp * $this->unit) + $epoch->getPreciseTimestamp($this->precision);
+		
+		// Then, split out into seconds and microseconds
+		$seconds = (int) $timestamp / $multiplier;
+		$microseconds = ($timestamp % $multiplier) * $multiplier;
+		
+		return Date::createFromTimestamp($seconds, $epoch->timezone)
+			->toImmutable()
+			->microseconds(0)
+			->addMicroseconds($microseconds);
+	}
+	
 	public function maxSequence(): int
 	{
 		return $this->sequence_segment->maxValue();
@@ -98,16 +116,6 @@ class GenericConfig implements Configuration
 	public function unitInMicroseconds(): int
 	{
 		return ceil(1000000 * ($this->unit / (10 ** $this->precision)));
-	}
-	
-	public function precision(): int
-	{
-		return $this->precision;
-	}
-	
-	public function unit(): int
-	{
-		return $this->unit;
 	}
 	
 	protected function mapWorkerIdsToPositions(WorkerIds $values): Collection

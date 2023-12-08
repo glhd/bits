@@ -20,13 +20,11 @@ interface Configuration
 	
 	public function timestamp(CarbonInterface $epoch, CarbonInterface $timestamp): int;
 	
+	public function carbon(CarbonInterface $epoch, int $timestamp): CarbonInterface;
+	
 	public function maxSequence(): int;
 	
 	public function validate(Collection|array|WorkerIds $values): void;
 	
 	public function unitInMicroseconds(): int;
-	
-	public function precision(): int;
-	
-	public function unit(): int;
 }
