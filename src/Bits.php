@@ -2,6 +2,10 @@
 
 namespace Glhd\Bits;
 
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
+use Glhd\Bits\Config\SegmentType;
+use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
@@ -12,6 +16,7 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Database\Grammar;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use JsonSerializable;
 
 // This adds support for the Expression interface in earlier versions of Laravel
@@ -71,6 +76,28 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	public function getValue(?Grammar $grammar = null): int
 	{
 		return $this->id();
+	}
+	
+	public function toCarbon(): CarbonInterface
+	{
+		$precision = $this->config->precision();
+		$multiplier = pow(10, 6 - $precision);
+		$unit = $this->config->unit();
+		$epoch = app(MakesBits::class)->epoch;
+		
+		$relative_timestamp = $this->values[$this->config->indexOf(SegmentType::Timestamp)];
+		
+		$reconstructed_precise_timestamp = ($relative_timestamp * $unit) + $epoch->getPreciseTimestamp($precision);
+		
+		$reconstructed_timestamp = (int) $reconstructed_precise_timestamp / $multiplier;
+		
+		$remainder_in_precision = $reconstructed_precise_timestamp % $multiplier;
+		$remainder_in_microseconds = $remainder_in_precision * $multiplier;
+		
+		return Date::createFromTimestamp($reconstructed_timestamp, $epoch->timezone)
+			->toImmutable()
+			->microseconds(0)
+			->addMicroseconds($remainder_in_microseconds);
 	}
 	
 	public function __toString(): string

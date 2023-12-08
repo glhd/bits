@@ -65,6 +65,15 @@ class GenericConfig implements Configuration
 			}, 0);
 	}
 	
+	public function indexOf(SegmentType $type): int|array
+	{
+		$matches = $this->segments
+			->filter(fn(Segment $segment) => $segment->type === $type)
+			->map(fn(Segment $segment) => $segment->position());
+		
+		return 1 === $matches->count() ? $matches->first() : $matches->toArray();
+	}
+	
 	public function timestamp(CarbonInterface $epoch, CarbonInterface $timestamp): int
 	{
 		return (int) round(($this->getPreciseTimestamp($timestamp) - $this->getPreciseTimestamp($epoch)) / $this->unit);
@@ -89,6 +98,16 @@ class GenericConfig implements Configuration
 	public function unitInMicroseconds(): int
 	{
 		return ceil(1000000 * ($this->unit / (10 ** $this->precision)));
+	}
+	
+	public function precision(): int
+	{
+		return $this->precision;
+	}
+	
+	public function unit(): int
+	{
+		return $this->unit;
 	}
 	
 	protected function mapWorkerIdsToPositions(WorkerIds $values): Collection
