@@ -213,7 +213,6 @@ class CustomTest extends TestCase
 				Segment::id('id', 4),
 				Segment::sequence('sequence', 10),
 			]),
-			date: $this->app->make(DateFactory::class),
 		);
 		
 		return new GenericFactory(

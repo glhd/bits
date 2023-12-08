@@ -4,6 +4,7 @@ namespace Glhd\Bits;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use DateTimeInterface;
 use Glhd\Bits\Config\SegmentType;
 use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\Configuration;
@@ -16,6 +17,7 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Database\Grammar;
 use Illuminate\Support\Collection;
+use Illuminate\Support\DateFactory;
 use Illuminate\Support\Facades\Date;
 use JsonSerializable;
 
@@ -79,12 +81,17 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 		return $this->id();
 	}
 	
+	public function toDateTime(): DateTimeInterface
+	{
+		return $this->config->timestampToDateTime(
+			epoch: $this->epoch,
+			timestamp: $this->values[$this->config->indexOf(SegmentType::Timestamp)],
+		);
+	}
+	
 	public function toCarbon(): CarbonInterface
 	{
-		return $this->config->carbon(
-			epoch: $this->epoch,
-			timestamp: $this->values[$this->config->indexOf(SegmentType::Timestamp)], 
-		);
+		return app(DateFactory::class)->instance($this->toDateTime());
 	}
 	
 	public function __toString(): string

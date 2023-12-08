@@ -3,11 +3,10 @@
 namespace Glhd\Bits\Config;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\DateFactory;
 
 class SnowflakesConfig extends GenericConfig
 {
-	public function __construct(DateFactory $date)
+	public function __construct()
 	{
 		parent::__construct(
 			precision: 3,
@@ -19,7 +18,6 @@ class SnowflakesConfig extends GenericConfig
 				Segment::id(label: 'worker', length: 5),
 				Segment::sequence(label: 'sequence', length: 12),
 			]),
-			date: $date,
 		);
 	}
 }

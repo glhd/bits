@@ -4,9 +4,10 @@ namespace Glhd\Bits\Config;
 
 use BadMethodCallException;
 use Carbon\CarbonInterface;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Glhd\Bits\Contracts\Configuration;
 use Illuminate\Support\Collection;
-use Illuminate\Support\DateFactory;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -21,7 +22,6 @@ class GenericConfig implements Configuration
 		protected int $precision,
 		protected int $unit,
 		protected Collection $segments,
-		protected DateFactory $date,
 	) {
 		$this->setTimestampAndSequenceSegments();
 		$this->setPositionsAndOffsets();
@@ -81,21 +81,18 @@ class GenericConfig implements Configuration
 		return (int) round(($this->getPreciseTimestamp($timestamp) - $this->getPreciseTimestamp($epoch)) / $this->unit);
 	}
 	
-	public function carbon(CarbonInterface $epoch, int $timestamp): CarbonInterface
+	public function timestampToDateTime(DateTimeInterface $epoch, int $timestamp): DateTimeImmutable
 	{
 		$multiplier = pow(10, 6 - $this->precision);
 		
 		// First, convert the timestamp from a relative integer to a full-precision timestamp
-		$timestamp = ($timestamp * $this->unit) + $epoch->getPreciseTimestamp($this->precision);
+		$timestamp = ($timestamp * $this->unit) + round(((float) $epoch->format('Uu')) / $multiplier);
 		
 		// Then, split out into seconds and microseconds
 		$seconds = (int) $timestamp / $multiplier;
 		$microseconds = ($timestamp % $multiplier) * $multiplier;
 		
-		return $this->date->createFromTimestamp($seconds, $epoch->timezone)
-			->toImmutable()
-			->microseconds(0)
-			->addMicroseconds($microseconds);
+		return DateTimeImmutable::createFromFormat('U.u', sprintf('%d.%06d', $seconds, $microseconds), $epoch->getTimezone());
 	}
 	
 	public function maxSequence(): int
