@@ -2,6 +2,7 @@
 
 namespace Glhd\Bits\Factories;
 
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
@@ -49,11 +50,15 @@ abstract class BitsFactory implements MakesBits
 	protected function validateConfiguration(): void
 	{
 		if (PHP_INT_SIZE < 8) {
-			throw new RuntimeException('Bits require 64-bit integer support.');
+			throw new RuntimeException('Bits requires 64-bit integer support.');
 		}
 		
 		if ($this->epoch->isFuture()) {
-			throw new InvalidArgumentException('Bits epoch cannot be in the future.');
+			throw new InvalidArgumentException(sprintf(
+				'Trying to use "%s" as epoch, but it is currently "%s" (Bits epoch cannot be in the future).',
+				$this->epoch->toDateTimeString(),
+				$this->epoch->nowWithSameTz()->toDateTimeString(),
+			));
 		}
 	}
 }

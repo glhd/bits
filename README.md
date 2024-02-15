@@ -49,6 +49,31 @@ You can use **Bits** to create [Twitter Snowflake IDs](https://en.wikipedia.org/
 composer require glhd/bits
 ```
 
+## Configuration
+
+There are two things you will need to configure to ensure that your IDs are valid and unique.
+
+### Set the `BITS_WORKER_ID` and `BITS_DATACENTER_ID`
+
+Snowflakes are so compact because they rely on the fact that each worker has its own ID. If you are
+running multiple servers in multiple datacenters, you need to give each a unique value. You need to
+set a unique `BITS_DATACENTER_ID` (0-31) for each datacenter your application uses, and each worker in the
+same datacenter should have a unique `BITS_WORKER_ID` (0-31). This means that you can have, at most, 1024
+separate workers generating snowflakes at the same exact moment in time.
+
+**Note:** If you use Lambda, this can be an issue. Eventually, we hope to have a serverless solution for
+Bits, but right now you need to manage locking/releasing IDs yourself if you're generating snowflakes
+in something like Laravel Vapor.
+
+### Set the `BITS_EPOCH`
+
+Another reason snowflakes are compact is because they use a custom "epoch" value (rather than the Unix 
+epoch of January 1, 1970). This is the earliest a snowflake can be generated, and also set the limit to 
+how far in the future snowflakes can be generated. By default, this value is `2023-01-01`, which should 
+be fine for most systems. But if you're going to use time-travel to before January 2023 in your tests, 
+this may cause problems (in which case you should set your epoch to before the earliest moment you 
+would time-travel).
+
 ## Usage
 
 To get a new snowflake ID, simply call `Snowflake::make()`. This returns a new

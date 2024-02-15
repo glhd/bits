@@ -5,6 +5,14 @@ format. This project adheres to [Semantic Versioning](https://semver.org/spec/v2
 
 ## [Unreleased]
 
+### Added
+
+- Added a `snowflake_id()` helper method to avoid `Snowflake::make()->id()` calls everywhere
+
+### Changed
+
+- Improved exception message when trying to set epoch to a future date
+
 ## [0.2.0] - 2023-11-13
 
 ## [0.1.1] - 2023-07-09
