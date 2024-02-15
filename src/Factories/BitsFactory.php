@@ -2,7 +2,6 @@
 
 namespace Glhd\Bits\Factories;
 
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
