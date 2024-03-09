@@ -9,7 +9,9 @@ class Snowflake extends Bits
 {
 	public static function make(): static
 	{
-		return app(MakesSnowflakes::class)->make();
+		return static::$factory
+			? call_user_func(static::$factory)
+			: app(MakesSnowflakes::class)->make();
 	}
 	
 	public static function fromId(int|string $id): static
