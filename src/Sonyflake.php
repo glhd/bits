@@ -9,7 +9,9 @@ class Sonyflake extends Bits
 {
 	public static function make(): static
 	{
-		return app(MakesSonyflakes::class)->make();
+		return static::$factory
+			? call_user_func(static::$factory)
+			: app(MakesSonyflakes::class)->make();
 	}
 	
 	public static function fromId(int|string $id): static

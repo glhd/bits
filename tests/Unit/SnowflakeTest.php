@@ -3,6 +3,7 @@
 namespace Glhd\Bits\Tests\Unit;
 
 use Carbon\CarbonInterval;
+use Exception;
 use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
@@ -191,5 +192,107 @@ class SnowflakeTest extends TestCase
 		
 		$this->assertEquals($string, $snowflake->toJson());
 		$this->assertEquals($string, json_encode($snowflake));
+	}
+
+	public function test_it_can_freeze_a_snowflake(): void
+	{
+		$this->assertNotSame((string) Snowflake::make(), (string) Snowflake::make());
+		$this->assertNotSame(Snowflake::make(), Snowflake::make());
+
+		$snowflake = Snowflake::freeze();
+
+		$this->assertSame($snowflake, Snowflake::make());
+		$this->assertSame(Snowflake::make(), Snowflake::make());
+		$this->assertSame((string) $snowflake, (string) Snowflake::make());
+		$this->assertSame((string) Snowflake::make(), (string) Snowflake::make());
+
+		Snowflake::createNormally();
+
+		$this->assertNotSame(Snowflake::make(), Snowflake::make());
+		$this->assertNotSame((string) Snowflake::make(), (string) Snowflake::make());
+	}
+
+	public function test_it_can_freeze_snowflakes_in_a_closure(): void
+	{
+		$snowflakes = [];
+
+		$snowflake = Snowflake::freeze(function($snowflake) use (&$snowflakes) {
+			$snowflakes[] = $snowflake;
+			$snowflakes[] = Snowflake::make();
+			$snowflakes[] = Snowflake::make();
+		});
+
+		$this->assertSame($snowflake, $snowflakes[0]);
+		$this->assertSame((string) $snowflake, (string) $snowflakes[0]);
+		$this->assertSame((string) $snowflakes[0], (string) $snowflakes[1]);
+		$this->assertSame($snowflakes[0], $snowflakes[1]);
+		$this->assertSame((string) $snowflakes[0], (string) $snowflakes[1]);
+		$this->assertSame($snowflakes[1], $snowflakes[2]);
+		$this->assertSame((string) $snowflakes[1], (string) $snowflakes[2]);
+		$this->assertNotSame(Snowflake::make(), Snowflake::make());
+		$this->assertNotSame((string) Snowflake::make(), (string) Snowflake::make());
+
+		Snowflake::createNormally();
+	}
+
+	public function test_it_creates_snowflakes_normally_after_failure_within_freeze_method(): void
+	{
+		try {
+			Snowflake::freeze(function() {
+				Snowflake::createUsing(fn() => Snowflake::coerce('1234'));
+				$this->assertSame(1234, Snowflake::make()->id());
+				throw new Exception('Something failed.');
+			});
+		} catch (Exception) {
+			$this->assertNotSame(1234, Snowflake::make()->id());
+		}
+	}
+
+	public function test_it_can_specify_a_sequence_of_snowflakes_to_utilise(): void
+	{
+		Snowflake::createUsingSequence([
+			0 => ($zeroth = Snowflake::make()),
+			1 => ($first = Snowflake::make()),
+			// just generate a random one here...
+			3 => ($third = Snowflake::make()),
+			// continue to generate random uuids...
+		]);
+
+		$retrieved = Snowflake::make();
+		$this->assertSame($zeroth, $retrieved);
+		$this->assertSame((string) $zeroth, (string) $retrieved);
+
+		$retrieved = Snowflake::make();
+		$this->assertSame($first, $retrieved);
+		$this->assertSame((string) $first, (string) $retrieved);
+
+		$retrieved = Snowflake::make();
+		$this->assertFalse(in_array($retrieved, [$zeroth, $first, $third], true));
+		$this->assertFalse(in_array((string) $retrieved, [(string) $zeroth, (string) $first, (string) $third], true));
+
+		$retrieved = Snowflake::make();
+		$this->assertSame($third, $retrieved);
+		$this->assertSame((string) $third, (string) $retrieved);
+
+		$retrieved = Snowflake::make();
+		$this->assertFalse(in_array($retrieved, [$zeroth, $first, $third], true));
+		$this->assertFalse(in_array((string) $retrieved, [(string) $zeroth, (string) $first, (string) $third], true));
+
+		Snowflake::createNormally();
+	}
+
+	public function test_it_can_specify_a_fallback_for_a_sequence(): void
+	{
+		Snowflake::createUsingSequence([Snowflake::make(), Snowflake::make()], fn() => throw new Exception('Out of Snowflakes.'));
+		Snowflake::make();
+		Snowflake::make();
+
+		try {
+			$this->expectExceptionMessage('Out of Snowflakes.');
+			Snowflake::make();
+			$this->fail();
+		} finally {
+			Snowflake::createNormally();
+		}
 	}
 }
