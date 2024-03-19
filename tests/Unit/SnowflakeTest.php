@@ -167,7 +167,7 @@ class SnowflakeTest extends TestCase
 		
 		Snowflake::make();
 		
-		Sleep::assertSlept(fn(CarbonInterval $interval) => $interval->totalMicroseconds === 1000);
+		Sleep::assertSlept(fn(CarbonInterval $interval) => (int) $interval->totalMicroseconds === 1000);
 	}
 	
 	public function test_a_snowflake_can_be_created_for_a_specific_timestamp(): void
