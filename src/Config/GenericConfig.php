@@ -4,6 +4,8 @@ namespace Glhd\Bits\Config;
 
 use BadMethodCallException;
 use Carbon\CarbonInterface;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Glhd\Bits\Contracts\Configuration;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -65,9 +67,32 @@ class GenericConfig implements Configuration
 			}, 0);
 	}
 	
+	public function indexOf(SegmentType $type): int|array
+	{
+		$matches = $this->segments
+			->filter(fn(Segment $segment) => $segment->type === $type)
+			->map(fn(Segment $segment) => $segment->position());
+		
+		return 1 === $matches->count() ? $matches->first() : $matches->toArray();
+	}
+	
 	public function timestamp(CarbonInterface $epoch, CarbonInterface $timestamp): int
 	{
 		return (int) round(($this->getPreciseTimestamp($timestamp) - $this->getPreciseTimestamp($epoch)) / $this->unit);
+	}
+	
+	public function timestampToDateTime(DateTimeInterface $epoch, int $timestamp): DateTimeImmutable
+	{
+		$multiplier = pow(10, 6 - $this->precision);
+		
+		// First, convert the timestamp from a relative integer to a full-precision timestamp
+		$timestamp = ($timestamp * $this->unit) + round(((float) $epoch->format('Uu')) / $multiplier);
+		
+		// Then, split out into seconds and microseconds
+		$seconds = (int) $timestamp / $multiplier;
+		$microseconds = ($timestamp % $multiplier) * $multiplier;
+		
+		return DateTimeImmutable::createFromFormat('U.u', sprintf('%d.%06d', $seconds, $microseconds), $epoch->getTimezone());
 	}
 	
 	public function maxSequence(): int

@@ -17,6 +17,7 @@ use Glhd\Bits\Sonyflake;
 use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Collection;
+use Illuminate\Support\DateFactory;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Sleep;
 

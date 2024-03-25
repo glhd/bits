@@ -2,8 +2,11 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
+use Carbon\Carbon;
 use Carbon\CarbonInterval;
+use Glhd\Bits\Config\SegmentType;
 use Glhd\Bits\Config\SnowflakesConfig;
+use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SnowflakeFactory;
@@ -191,5 +194,58 @@ class SnowflakeTest extends TestCase
 		
 		$this->assertEquals($string, $snowflake->toJson());
 		$this->assertEquals($string, json_encode($snowflake));
+	}
+	
+	public function test_it_parses_timestamps_correctly(): void
+	{
+		Date::setTestNow(now()->microseconds(842000));
+		
+		$sequence = 0;
+		
+		$factory = new SnowflakeFactory(
+			epoch: now()->microseconds(0),
+			datacenter_id: 1,
+			worker_id: 15,
+			config: app(SnowflakesConfig::class),
+			sequence: new TestingSequenceResolver($sequence)
+		);
+		
+		$this->app->instance(MakesBits::class, $factory);
+		
+		$snowflake_at_epoch = $factory->make();
+		
+		$instance = $snowflake_at_epoch->toCarbon();
+		
+		$this->assertEquals(now()->format('U.u'), $instance->format('U.u'));
+	}
+	
+	private static function getIntegerAndDecimalParts($numbers, $decimals = 6)
+	{
+		if (\is_int($numbers) || \is_float($numbers)) {
+			$numbers = number_format($numbers, $decimals, '.', '');
+		}
+		
+		$sign = str_starts_with($numbers, '-')
+			? -1
+			: 1;
+		$integer = 0;
+		$decimal = 0;
+		
+		foreach (preg_split('`[^\d.]+`', $numbers) as $chunk) {
+			[$integerPart, $decimalPart] = explode('.', "$chunk.");
+			
+			$integer += (int) $integerPart;
+			$decimal += (float) ("0.$decimalPart");
+		}
+		
+		$overflow = floor($decimal);
+		$integer += $overflow;
+		$decimal -= $overflow;
+		
+		return [$sign * $integer,
+			$decimal === 0.0
+				? 0.0
+				: $sign * round($decimal * pow(10, $decimals))
+		];
 	}
 }

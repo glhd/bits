@@ -2,6 +2,11 @@
 
 namespace Glhd\Bits;
 
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
+use DateTimeInterface;
+use Glhd\Bits\Config\SegmentType;
+use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
@@ -12,6 +17,8 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Database\Grammar;
 use Illuminate\Support\Collection;
+use Illuminate\Support\DateFactory;
+use Illuminate\Support\Facades\Date;
 use JsonSerializable;
 
 // This adds support for the Expression interface in earlier versions of Laravel
@@ -51,7 +58,8 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	
 	public function __construct(
 		array $values,
-		protected Configuration $config
+		protected Configuration $config,
+		protected CarbonInterface $epoch,
 	) {
 		$this->config->validate($values);
 		
@@ -71,6 +79,19 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	public function getValue(?Grammar $grammar = null): int
 	{
 		return $this->id();
+	}
+	
+	public function toDateTime(): DateTimeInterface
+	{
+		return $this->config->timestampToDateTime(
+			epoch: $this->epoch,
+			timestamp: $this->values[$this->config->indexOf(SegmentType::Timestamp)],
+		);
+	}
+	
+	public function toCarbon(): CarbonInterface
+	{
+		return app(DateFactory::class)->instance($this->toDateTime());
 	}
 	
 	public function __toString(): string
