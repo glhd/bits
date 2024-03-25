@@ -146,7 +146,7 @@ class SonyflakeTest extends TestCase
 		
 		Sonyflake::make();
 		
-		Sleep::assertSlept(fn(CarbonInterval $interval) => $interval->totalMicroseconds === 10000);
+		Sleep::assertSlept(fn(CarbonInterval $interval) => (int) $interval->totalMicroseconds === 10000);
 	}
 	
 	public function test_a_snowflake_can_be_created_for_a_specific_timestamp(): void

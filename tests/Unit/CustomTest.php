@@ -173,7 +173,7 @@ class CustomTest extends TestCase
 		
 		$this->assertEquals(0, $first_after_second_sleep->values[2]);
 		
-		Sleep::assertSlept(fn(CarbonInterval $interval) => $interval->totalMicroseconds === 1, 2);
+		Sleep::assertSlept(fn(CarbonInterval $interval) => (int) $interval->totalMicroseconds === 1, 2);
 	}
 	
 	public function test_custom_bits_can_be_coerced_to_snowflakes_or_sonyflakes(): void
