@@ -3,6 +3,7 @@
 namespace Glhd\Bits\Tests\Unit;
 
 use Carbon\CarbonInterval;
+use Exception;
 use Glhd\Bits\Config\SonyflakesConfig;
 use Glhd\Bits\Contracts\MakesSonyflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
@@ -160,5 +161,107 @@ class SonyflakeTest extends TestCase
 		$sonyflake = $factory->makeFromTimestamp($factory->epoch->toImmutable()->addMilliseconds(420));
 		
 		$this->assertEquals(42, $sonyflake->timestamp);
+	}
+
+	public function test_it_can_freeze_a_sonyflake(): void
+	{
+		$this->assertNotSame((string) Sonyflake::make(), (string) Sonyflake::make());
+		$this->assertNotSame(Sonyflake::make(), Sonyflake::make());
+
+		$sonyflake = Sonyflake::freeze();
+
+		$this->assertSame($sonyflake, Sonyflake::make());
+		$this->assertSame(Sonyflake::make(), Sonyflake::make());
+		$this->assertSame((string) $sonyflake, (string) Sonyflake::make());
+		$this->assertSame((string) Sonyflake::make(), (string) Sonyflake::make());
+
+		Sonyflake::createNormally();
+
+		$this->assertNotSame(Sonyflake::make(), Sonyflake::make());
+		$this->assertNotSame((string) Sonyflake::make(), (string) Sonyflake::make());
+	}
+
+	public function test_it_can_freeze_sonyflakes_in_a_closure(): void
+	{
+		$sonyflakes = [];
+
+		$sonyflake = Sonyflake::freeze(function($sonyflake) use (&$sonyflakes) {
+			$sonyflakes[] = $sonyflake;
+			$sonyflakes[] = Sonyflake::make();
+			$sonyflakes[] = Sonyflake::make();
+		});
+
+		$this->assertSame($sonyflake, $sonyflakes[0]);
+		$this->assertSame((string) $sonyflake, (string) $sonyflakes[0]);
+		$this->assertSame((string) $sonyflakes[0], (string) $sonyflakes[1]);
+		$this->assertSame($sonyflakes[0], $sonyflakes[1]);
+		$this->assertSame((string) $sonyflakes[0], (string) $sonyflakes[1]);
+		$this->assertSame($sonyflakes[1], $sonyflakes[2]);
+		$this->assertSame((string) $sonyflakes[1], (string) $sonyflakes[2]);
+		$this->assertNotSame(Sonyflake::make(), Sonyflake::make());
+		$this->assertNotSame((string) Sonyflake::make(), (string) Sonyflake::make());
+
+		Sonyflake::createNormally();
+	}
+
+	public function test_it_creates_sonyflakes_normally_after_failure_within_freeze_method(): void
+	{
+		try {
+			Sonyflake::freeze(function() {
+				Sonyflake::createUsing(fn() => Sonyflake::coerce('1234'));
+				$this->assertSame(1234, Sonyflake::make()->id());
+				throw new Exception('Something failed.');
+			});
+		} catch (Exception) {
+			$this->assertNotSame(1234, Sonyflake::make()->id());
+		}
+	}
+
+	public function test_it_can_specify_a_sequence_of_sonyflakes_to_utilise(): void
+	{
+		Sonyflake::createUsingSequence([
+			0 => ($zeroth = Sonyflake::make()),
+			1 => ($first = Sonyflake::make()),
+			// just generate a random one here...
+			3 => ($third = Sonyflake::make()),
+			// continue to generate random uuids...
+		]);
+
+		$retrieved = Sonyflake::make();
+		$this->assertSame($zeroth, $retrieved);
+		$this->assertSame((string) $zeroth, (string) $retrieved);
+
+		$retrieved = Sonyflake::make();
+		$this->assertSame($first, $retrieved);
+		$this->assertSame((string) $first, (string) $retrieved);
+
+		$retrieved = Sonyflake::make();
+		$this->assertFalse(in_array($retrieved, [$zeroth, $first, $third], true));
+		$this->assertFalse(in_array((string) $retrieved, [(string) $zeroth, (string) $first, (string) $third], true));
+
+		$retrieved = Sonyflake::make();
+		$this->assertSame($third, $retrieved);
+		$this->assertSame((string) $third, (string) $retrieved);
+
+		$retrieved = Sonyflake::make();
+		$this->assertFalse(in_array($retrieved, [$zeroth, $first, $third], true));
+		$this->assertFalse(in_array((string) $retrieved, [(string) $zeroth, (string) $first, (string) $third], true));
+
+		Sonyflake::createNormally();
+	}
+
+	public function test_it_can_specify_a_fallback_for_a_sequence(): void
+	{
+		Sonyflake::createUsingSequence([Sonyflake::make(), Sonyflake::make()], fn() => throw new Exception('Out of Sonyflakes.'));
+		Sonyflake::make();
+		Sonyflake::make();
+
+		try {
+			$this->expectExceptionMessage('Out of Sonyflakes.');
+			Sonyflake::make();
+			$this->fail();
+		} finally {
+			Sonyflake::createNormally();
+		}
 	}
 }

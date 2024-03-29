@@ -2,6 +2,7 @@
 
 namespace Glhd\Bits;
 
+use Closure;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
@@ -25,10 +26,15 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	public readonly Collection $values;
 	
 	protected ?int $id = null;
+
+	/** @var callable|null */
+	protected static $factory;
 	
 	public static function make(): static
 	{
-		return app(MakesBits::class)->make();
+		return static::$factory
+			? call_user_func(static::$factory)
+			: app(MakesBits::class)->make();
 	}
 	
 	public static function fromId(int|string $id): static
@@ -47,6 +53,60 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 			'sonyflake', 'sonyflakes' => new BitsCast(app(MakesSonyflakes::class)),
 			default => new BitsCast(app(MakesSnowflakes::class)),
 		};
+	}
+
+	public static function freeze(Closure $callback = null): static
+	{
+		$flake = static::make();
+
+		static::createUsing(fn() => $flake);
+
+		if ($callback !== null) {
+			try {
+				$callback($flake);
+			} finally {
+				static::createNormally();
+			}
+		}
+
+		return $flake;
+	}
+
+	public static function createUsingSequence(array $sequence, $whenMissing = null): void
+	{
+		$next = 0;
+
+		$whenMissing ??= function() use (&$next) {
+			$factoryCache = static::$factory;
+
+			static::$factory = null;
+
+			$flake = static::make();
+
+			static::$factory = $factoryCache;
+
+			$next++;
+
+			return $flake;
+		};
+
+		static::createUsing(function() use (&$next, $sequence, $whenMissing) {
+			if (array_key_exists($next, $sequence)) {
+				return $sequence[$next++];
+			}
+
+			return $whenMissing();
+		});
+	}
+
+	public static function createUsing(callable $factory = null): void
+	{
+		static::$factory = $factory;
+	}
+
+	public static function createNormally(): void
+	{
+		static::$factory = null;
 	}
 	
 	public function __construct(
