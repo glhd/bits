@@ -131,6 +131,27 @@ $example->id instanceof Snowflake; // true
 echo $example->id; // 65898467809951744
 ```
 
+### Usage with Livewire
+
+If you're using Livewire, you can use the `SnowflakeSynth` synthesizer to
+make Snowflakes usable in your components.
+
+All you need to do is to register the synthesizer in your `AppServiceProvider`:
+
+```php
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        Livewire::propertySynthesizer(SnowflakeSynth::class);
+    }
+}
+```
+
+
 ## About 64-bit Unique IDs
 
 ### Snowflake format
