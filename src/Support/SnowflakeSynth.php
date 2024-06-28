@@ -16,7 +16,7 @@ class SnowflakeSynth extends Synth
 
 	public function dehydrate($target)
 	{
-		return [$target->id(), []];
+        return [(string) $target->id(), []];
 	}
 
 	public function hydrate($value)
