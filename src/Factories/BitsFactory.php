@@ -44,7 +44,7 @@ abstract class BitsFactory implements MakesBits
 	
 	protected function now(): CarbonInterface
 	{
-		return $this->now_resolver 
+		return $this->now_resolver
 			? call_user_func($this->now_resolver)
 			: new CarbonImmutable(new DateTime());
 	}
