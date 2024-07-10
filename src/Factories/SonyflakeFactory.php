@@ -49,7 +49,7 @@ class SonyflakeFactory extends BitsFactory implements MakesSonyflakes
 	{
 		$timestamp = $this->diffFromEpoch($timestamp);
 		
-		return new Sonyflake($timestamp, 0, 0, $this->config);
+		return new Sonyflake($timestamp, 0, 0, $this->epoch, $this->config);
 	}
 	
 	public function fromId(int|string $id): Sonyflake

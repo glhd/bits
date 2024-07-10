@@ -57,7 +57,7 @@ class GenericFactory extends BitsFactory
 			sequence: 0
 		);
 		
-		return new Bits($values, $this->config);
+		return new Bits($values, $this->config, $this->epoch);
 	}
 	
 	public function fromId(int|string $id): Bits

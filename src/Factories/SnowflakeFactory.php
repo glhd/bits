@@ -50,7 +50,7 @@ class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 	{
 		$timestamp = $this->diffFromEpoch($timestamp);
 		
-		return new Snowflake($timestamp, 0, 0, 0, $this->config);
+		return new Snowflake($timestamp, 0, 0, 0, $this->epoch, $this->config);
 	}
 	
 	public function fromId(int|string $id): Snowflake
