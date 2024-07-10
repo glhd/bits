@@ -3,6 +3,8 @@
 namespace Glhd\Bits\Contracts;
 
 use Carbon\CarbonInterface;
+use DateTimeInterface;
+use Glhd\Bits\Config\SegmentType;
 use Glhd\Bits\Config\WorkerIds;
 use Illuminate\Support\Collection;
 
@@ -15,7 +17,12 @@ interface Configuration
 	
 	public function combine(int ...$values): int;
 	
+	/** @return int[] */
+	public function positionOf(SegmentType $type): array;
+	
 	public function timestamp(CarbonInterface $epoch, CarbonInterface $timestamp): int;
+	
+	public function timestampToDateTime(DateTimeInterface $epoch, int $timestamp): DateTimeInterface;
 	
 	public function maxSequence(): int;
 	

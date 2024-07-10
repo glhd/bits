@@ -2,6 +2,9 @@
 
 namespace Glhd\Bits;
 
+use Carbon\CarbonInterface;
+use DateTimeInterface;
+use Glhd\Bits\Config\SegmentType;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
@@ -12,6 +15,7 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Database\Grammar;
 use Illuminate\Support\Collection;
+use Illuminate\Support\DateFactory;
 use JsonSerializable;
 
 // This adds support for the Expression interface in earlier versions of Laravel
@@ -51,7 +55,8 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	
 	public function __construct(
 		array $values,
-		protected Configuration $config
+		protected Configuration $config,
+		protected CarbonInterface $epoch,
 	) {
 		$this->config->validate($values);
 		
@@ -73,6 +78,19 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 		return $this->id();
 	}
 	
+	public function toDateTime(): DateTimeInterface
+	{
+		return $this->config->timestampToDateTime(
+			epoch: $this->epoch,
+			timestamp: $this->rawSegmentValue(SegmentType::Timestamp),
+		);
+	}
+	
+	public function toCarbon(): CarbonInterface
+	{
+		return app(DateFactory::class)->instance($this->toDateTime());
+	}
+	
 	public function __toString(): string
 	{
 		return (string) $this->id();
@@ -86,5 +104,10 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	public function jsonSerialize(): mixed
 	{
 		return (string) $this->id();
+	}
+	
+	protected function rawSegmentValue(SegmentType $segment, int $position = 0): int
+	{
+		return $this->values[$this->config->positionOf($segment)[$position]];
 	}
 }

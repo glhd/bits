@@ -2,6 +2,7 @@
 
 namespace Glhd\Bits;
 
+use Carbon\CarbonInterface;
 use Glhd\Bits\Config\SonyflakesConfig;
 use Glhd\Bits\Contracts\MakesSonyflakes;
 
@@ -26,11 +27,13 @@ class Sonyflake extends Bits
 		public readonly int $timestamp,
 		public readonly int $sequence,
 		public readonly int $machine_id,
+		CarbonInterface $epoch,
 		?SonyflakesConfig $config = null,
 	) {
 		parent::__construct(
 			values: [$this->timestamp, $this->sequence, $this->machine_id],
 			config: $config ?? app(SonyflakesConfig::class),
+			epoch: $epoch,
 		);
 	}
 
