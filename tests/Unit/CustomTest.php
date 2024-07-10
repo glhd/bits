@@ -111,6 +111,7 @@ class CustomTest extends TestCase
 		$sequence = 0;
 		
 		$factory = $this->getBitsFactory(7, new TestingSequenceResolver($sequence));
+		$factory->setTestNow(now());
 		
 		$bits_at_epoch1 = $factory->make();
 		
@@ -126,7 +127,7 @@ class CustomTest extends TestCase
 		$this->assertEquals($bits_at_epoch2->values[1], 7);
 		$this->assertEquals($bits_at_epoch2->values[2], 1);
 		
-		Date::setTestNow(now()->addMicrosecond());
+		$factory->setTestNow(now()->addMicrosecond());
 		$bits_at_1us = $factory->make();
 		
 		$this->assertEquals($bits_at_1us->id(), 0b0000000000000000000000000000000000000000000000000101110000000010);
@@ -134,7 +135,7 @@ class CustomTest extends TestCase
 		$this->assertEquals($bits_at_1us->values[1], 7);
 		$this->assertEquals($bits_at_1us->values[2], 2);
 		
-		Date::setTestNow(now()->addMicrosecond());
+		$factory->setTestNow(now()->addMicroseconds(2));
 		$bits_at_2us = $factory->make();
 		
 		$this->assertEquals($bits_at_2us->id(), 0b0000000000000000000000000000000000000000000000001001110000000011);

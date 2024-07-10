@@ -7,6 +7,7 @@ use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SnowflakeFactory;
+use Glhd\Bits\SequenceResolvers\InMemorySequenceResolver;
 use Glhd\Bits\SequenceResolvers\TestingSequenceResolver;
 use Glhd\Bits\Snowflake;
 use Glhd\Bits\Sonyflake;
@@ -114,6 +115,8 @@ class SnowflakeTest extends TestCase
 			sequence: new TestingSequenceResolver($sequence)
 		);
 		
+		$factory->setTestNow(now());
+		
 		$snowflake_at_epoch1 = $factory->make();
 		
 		$this->assertEquals($snowflake_at_epoch1->id(), 0b0000000000000000000000000000000000000000000000101111000000000000);
@@ -130,7 +133,8 @@ class SnowflakeTest extends TestCase
 		$this->assertEquals($snowflake_at_epoch2->worker_id, 15);
 		$this->assertEquals($snowflake_at_epoch2->sequence, 1);
 		
-		Date::setTestNow(now()->addMillisecond());
+		$factory->setTestNow(now()->addMillisecond());
+		
 		$snowflake_at_1ms = $factory->make();
 		
 		$this->assertEquals($snowflake_at_1ms->id(), 0b0000000000000000000000000000000000000000010000101111000000000010);
@@ -139,7 +143,8 @@ class SnowflakeTest extends TestCase
 		$this->assertEquals($snowflake_at_1ms->worker_id, 15);
 		$this->assertEquals($snowflake_at_1ms->sequence, 2);
 		
-		Date::setTestNow(now()->addMillisecond());
+		$factory->setTestNow(now()->addMilliseconds(2));
+		
 		$snowflake_at_2ms = $factory->make();
 		
 		$this->assertEquals($snowflake_at_2ms->id(), 0b0000000000000000000000000000000000000000100000101111000000000011);
@@ -147,6 +152,31 @@ class SnowflakeTest extends TestCase
 		$this->assertEquals($snowflake_at_2ms->datacenter_id, 1);
 		$this->assertEquals($snowflake_at_2ms->worker_id, 15);
 		$this->assertEquals($snowflake_at_2ms->sequence, 3);
+	}
+	
+	public function test_it_generates_using_real_now_rather_than_test_now(): void
+	{
+		Date::setTestNow(now()->subMinute());
+		
+		$factory = new SnowflakeFactory(
+			epoch: now(),
+			datacenter_id: 1,
+			worker_id: 15,
+			config: app(SnowflakesConfig::class),
+			sequence: new InMemorySequenceResolver(),
+		);
+		
+		$factory->setTestNow(now());
+		$snowflake_at_epoch = $factory->make();
+		
+		$this->assertEquals($snowflake_at_epoch->id(), 0b0000000000000000000000000000000000000000000000101111000000000000);
+		$this->assertEquals($snowflake_at_epoch->timestamp, 0);
+		
+		$factory->setTestNow(null);
+		$snowflake_at_real_now = $factory->make();
+		
+		$this->assertGreaterThan(0b0000000000000000000000000000000000000000000000101111000000000000, $snowflake_at_real_now->id());
+		$this->assertGreaterThanOrEqual(60_000, $snowflake_at_real_now->timestamp); // 1 min = 60,000 ms
 	}
 	
 	public function test_it_sleeps_1ms_when_sequence_limit_is_reached(): void
