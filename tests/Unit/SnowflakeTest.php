@@ -198,7 +198,9 @@ class SnowflakeTest extends TestCase
 	
 	public function test_it_parses_timestamps_correctly(): void
 	{
-		Date::setTestNow(now()->microseconds(842000));
+		// Only the 842 will be preserved because snowflakes are only
+		// millisecond-precise, not microsecond-precise
+		Date::setTestNow(now()->microseconds(842000)); 
 		
 		$sequence = 0;
 		
@@ -217,35 +219,5 @@ class SnowflakeTest extends TestCase
 		$instance = $snowflake_at_epoch->toCarbon();
 		
 		$this->assertEquals(now()->format('U.u'), $instance->format('U.u'));
-	}
-	
-	private static function getIntegerAndDecimalParts($numbers, $decimals = 6)
-	{
-		if (\is_int($numbers) || \is_float($numbers)) {
-			$numbers = number_format($numbers, $decimals, '.', '');
-		}
-		
-		$sign = str_starts_with($numbers, '-')
-			? -1
-			: 1;
-		$integer = 0;
-		$decimal = 0;
-		
-		foreach (preg_split('`[^\d.]+`', $numbers) as $chunk) {
-			[$integerPart, $decimalPart] = explode('.', "$chunk.");
-			
-			$integer += (int) $integerPart;
-			$decimal += (float) ("0.$decimalPart");
-		}
-		
-		$overflow = floor($decimal);
-		$integer += $overflow;
-		$decimal -= $overflow;
-		
-		return [$sign * $integer,
-			$decimal === 0.0
-				? 0.0
-				: $sign * round($decimal * pow(10, $decimals))
-		];
 	}
 }

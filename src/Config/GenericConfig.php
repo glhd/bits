@@ -3,6 +3,7 @@
 namespace Glhd\Bits\Config;
 
 use BadMethodCallException;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -88,11 +89,15 @@ class GenericConfig implements Configuration
 		// First, convert the timestamp from a relative integer to a full-precision timestamp
 		$timestamp = ($timestamp * $this->unit) + round(((float) $epoch->format('Uu')) / $multiplier);
 		
-		// Then, split out into seconds and microseconds
+		// We need to then convert our full-precision timestamp into a format that PHP can
+		// parse into a precise DateTime object. The format "U.u" seems to be the best way to
+		// do that, so we need to split our timestamp into a unix timestamp in seconds, and
+		// any remaining microseconds to add to that timestamp.
 		$seconds = (int) $timestamp / $multiplier;
-		$microseconds = ($timestamp % $multiplier) * $multiplier;
+		$remaining_microseconds = ($timestamp % $multiplier) * $multiplier;
+		$formatted_for_parsing = sprintf('%d.%06d', $seconds, $remaining_microseconds);
 		
-		return DateTimeImmutable::createFromFormat('U.u', sprintf('%d.%06d', $seconds, $microseconds), $epoch->getTimezone());
+		return DateTimeImmutable::createFromFormat('U.u', $formatted_for_parsing, $epoch->getTimezone());
 	}
 	
 	public function maxSequence(): int
