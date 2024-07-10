@@ -152,7 +152,7 @@ class SonyflakeTest extends TestCase
 		Sleep::assertSlept(fn(CarbonInterval $interval) => (int) $interval->totalMicroseconds === 10000);
 	}
 	
-	public function test_a_snowflake_can_be_created_for_a_specific_timestamp(): void
+	public function test_a_sonyflake_can_be_created_for_a_specific_timestamp(): void
 	{
 		$factory = $this->app->make(MakesSonyflakes::class);
 		
@@ -163,5 +163,22 @@ class SonyflakeTest extends TestCase
 		$sonyflake = $factory->makeFromTimestamp($factory->epoch->toImmutable()->addMilliseconds(420));
 		
 		$this->assertEquals(42, $sonyflake->timestamp);
+	}
+	
+	public function test_a_sonyflake_can_be_created_for_querying_by_a_specific_timestamp(): void
+	{
+		$factory = $this->app->make(MakesSonyflakes::class);
+		
+		$sonyflake = $factory->firstForTimestamp($factory->epoch->toImmutable()->addMilliseconds(10));
+		
+		$this->assertEquals(1, $sonyflake->timestamp);
+		$this->assertEquals(0, $sonyflake->sequence);
+		$this->assertEquals(0, $sonyflake->machine_id);
+		
+		$sonyflake = $factory->firstForTimestamp($factory->epoch->toImmutable()->addMilliseconds(420));
+		
+		$this->assertEquals(42, $sonyflake->timestamp);
+		$this->assertEquals(0, $sonyflake->sequence);
+		$this->assertEquals(0, $sonyflake->machine_id);
 	}
 }

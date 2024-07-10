@@ -11,6 +11,8 @@ interface MakesBits
 	
 	public function makeFromTimestamp(CarbonInterface $timestamp): Bits;
 	
+	public function firstForTimestamp(CarbonInterface $timestamp): Bits;
+	
 	public function fromId(int|string $id): Bits;
 	
 	public function coerce(int|string|Bits $value): Bits;

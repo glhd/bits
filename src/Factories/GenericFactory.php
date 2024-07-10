@@ -47,6 +47,19 @@ class GenericFactory extends BitsFactory
 		return new Bits($values, $this->config, $this->epoch);
 	}
 	
+	public function firstForTimestamp(CarbonInterface $timestamp): Bits
+	{
+		$timestamp = $this->diffFromEpoch($timestamp);
+		
+		$values = $this->config->organize(
+			ids: new WorkerIds(...array_map(fn() => 0, $this->ids->ids)),
+			timestamp: $timestamp,
+			sequence: 0
+		);
+		
+		return new Bits($values, $this->config, $this->epoch);
+	}
+	
 	public function fromId(int|string $id): Bits
 	{
 		$values = $this->config->parse((int) $id);

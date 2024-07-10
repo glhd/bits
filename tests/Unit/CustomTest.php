@@ -195,12 +195,28 @@ class CustomTest extends TestCase
 		$factory = $this->getBitsFactory(14);
 		
 		$bits = $factory->makeFromTimestamp(now()->addMicrosecond());
+		$this->assertEquals([1, 14, 0], $bits->values->all());
 		
-		$this->assertEquals(1, $bits->values[0]);
+		$bits = $factory->makeFromTimestamp(now()->addMicrosecond());
+		$this->assertEquals([1, 14, 1], $bits->values->all());
 		
 		$bits = $factory->makeFromTimestamp(now()->addMicroseconds(42));
+		$this->assertEquals([42, 14, 0], $bits->values->all());
+	}
+	
+	public function test_a_bit_can_be_created_for_querying_by_a_specific_timestamp(): void
+	{
+		Date::setTestNow(now());
 		
-		$this->assertEquals(42, $bits->values[0]);
+		$factory = $this->getBitsFactory(14);
+		
+		$bits = $factory->firstForTimestamp(now()->addMicrosecond());
+		
+		$this->assertEquals([1, 0, 0], $bits->values->all());
+		
+		$bits = $factory->firstForTimestamp(now()->addMicroseconds(42));
+		
+		$this->assertEquals([42, 0, 0], $bits->values->all());
 	}
 	
 	protected function getBitsFactory(int $id, ResolvesSequences $sequence = null): GenericFactory

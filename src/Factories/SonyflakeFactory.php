@@ -45,6 +45,13 @@ class SonyflakeFactory extends BitsFactory implements MakesSonyflakes
 		return new Sonyflake($timestamp, $sequence, $this->machine_id, $this->epoch, $this->config);
 	}
 	
+	public function firstForTimestamp(CarbonInterface $timestamp): Sonyflake
+	{
+		$timestamp = $this->diffFromEpoch($timestamp);
+		
+		return new Sonyflake($timestamp, 0, 0, $this->epoch, $this->config);
+	}
+	
 	public function fromId(int|string $id): Sonyflake
 	{
 		[$timestamp, $sequence, $machine_id] = $this->config->parse((int) $id);
