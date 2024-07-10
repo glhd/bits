@@ -11,6 +11,7 @@ use Glhd\Bits\Contracts\Configuration;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use RuntimeException;
 
 /** @property Collection<int, \Glhd\Bits\Config\Segment> $segments */
 class GenericConfig implements Configuration
@@ -87,17 +88,22 @@ class GenericConfig implements Configuration
 		$multiplier = pow(10, 6 - $this->precision);
 		
 		// First, convert the timestamp from a relative integer to a full-precision timestamp
-		$timestamp = ($timestamp * $this->unit) + round(((float) $epoch->format('Uu')) / $multiplier);
+		$precise_timestamp = (($timestamp * $this->unit) + round(((float) $epoch->format('Uu')) / $multiplier)) * $multiplier;
 		
 		// We need to then convert our full-precision timestamp into a format that PHP can
 		// parse into a precise DateTime object. The format "U.u" seems to be the best way to
 		// do that, so we need to split our timestamp into a unix timestamp in seconds, and
 		// any remaining microseconds to add to that timestamp.
-		$seconds = (int) $timestamp / $multiplier;
-		$remaining_microseconds = ($timestamp % $multiplier) * $multiplier;
-		$formatted_for_parsing = sprintf('%d.%06d', $seconds, $remaining_microseconds);
+		$seconds = (int) floor($precise_timestamp / 1_000_000);
+		$remaining_microseconds = ($precise_timestamp % 1_000_000) * 1_000_000;
+		$formatted_microseconds = substr(sprintf('%06d', $remaining_microseconds), 0, 6);
+		$formatted_for_parsing = "{$seconds}.{$formatted_microseconds}";
 		
-		return DateTimeImmutable::createFromFormat('U.u', $formatted_for_parsing, $epoch->getTimezone());
+		if ($result = DateTimeImmutable::createFromFormat('U.u', $formatted_for_parsing, $epoch->getTimezone())) {
+			return $result;
+		}
+		
+		throw new RuntimeException('Carbon error: '.json_encode(DateTimeImmutable::getLastErrors()));
 	}
 	
 	public function maxSequence(): int
