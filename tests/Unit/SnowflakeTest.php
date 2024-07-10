@@ -239,6 +239,7 @@ class SnowflakeTest extends TestCase
 			config: app(SnowflakesConfig::class),
 			sequence: new TestingSequenceResolver($sequence)
 		);
+		$factory->setTestNow(now());
 		
 		$this->app->instance(MakesBits::class, $factory);
 		
