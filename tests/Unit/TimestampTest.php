@@ -13,7 +13,6 @@ use Glhd\Bits\Factories\GenericFactory;
 use Glhd\Bits\SequenceResolvers\TestingSequenceResolver;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Date;
 
 class TimestampTest extends TestCase
 {
@@ -103,10 +102,10 @@ class TimestampTest extends TestCase
 			precision: $precision,
 			unit: $unit,
 			segments: $segments ?? new Collection([
-			Segment::timestamp('timestamp', 50),
-			Segment::id('id', 4),
-			Segment::sequence('sequence', 10),
-		]),
+				Segment::timestamp('timestamp', 50),
+				Segment::id('id', 4),
+				Segment::sequence('sequence', 10),
+			]),
 		);
 		
 		$factory = new GenericFactory(

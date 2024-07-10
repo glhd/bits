@@ -2,9 +2,7 @@
 
 namespace Glhd\Bits\Tests\Unit;
 
-use Carbon\Carbon;
 use Carbon\CarbonInterval;
-use Glhd\Bits\Config\SegmentType;
 use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
@@ -230,7 +228,7 @@ class SnowflakeTest extends TestCase
 	{
 		// Only the 842 will be preserved because snowflakes are only
 		// millisecond-precise, not microsecond-precise
-		Date::setTestNow(now()->microseconds(842000)); 
+		Date::setTestNow(now()->microseconds(842000));
 		
 		$sequence = 0;
 		

@@ -87,7 +87,7 @@ class GenericConfig implements Configuration
 		// The multiplier is the inverse of the precision. For example, if the precision is 6 (i.e. 6 digits
 		// of decimal points after the second [aka microseconds]), then our multiplier is 1. On the other hand,
 		// if the precision is 3 (aka milliseconds), our multiplier needs to be 1,000, to convert milliseconds
-		// to microseconds (eg. 1,000ms = 1,000,000us). 
+		// to microseconds (eg. 1,000ms = 1,000,000us).
 		$multiplier = pow(10, 6 - $this->precision);
 		
 		// First, convert the timestamp from a relative integer to a full-precision timestamp (in microseconds)
