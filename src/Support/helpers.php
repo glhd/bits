@@ -17,6 +17,13 @@ if (! function_exists('snowflake')) {
 	}
 }
 
+if (! function_exists('snowflake_id')) {
+	function snowflake_id(): int
+	{
+		return app(MakesSnowflakes::class)->make()->id();
+	}
+}
+
 if (! function_exists('sonyflake')) {
 	function sonyflake(null|int|string|Bits $value = null): Sonyflake|MakesSonyflakes
 	{

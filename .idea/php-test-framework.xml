@@ -6,6 +6,7 @@
         <cache>
           <versions>
             <info id="Local" version="10.2.1" />
+            <info id="Local/Users/inxilpro/Development/open-source/bits/vendor/autoload.php" version="10.2.1" />
           </versions>
         </cache>
       </tool>

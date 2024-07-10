@@ -2,7 +2,10 @@
 
 namespace Glhd\Bits\Factories;
 
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Closure;
+use DateTime;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\ResolvesSequences;
@@ -17,6 +20,8 @@ if (! class_exists(Sleep::class)) {
 
 abstract class BitsFactory implements MakesBits
 {
+	protected ?Closure $now_resolver = null;
+	
 	public function __construct(
 		public readonly CarbonInterface $epoch,
 		protected Configuration $config,
@@ -25,10 +30,29 @@ abstract class BitsFactory implements MakesBits
 		$this->validateConfiguration();
 	}
 	
+	public function setTestNow(CarbonInterface|Closure|null $now_resolver = null): static
+	{
+		if ($now_resolver instanceof CarbonInterface) {
+			$test_now = $now_resolver;
+			$now_resolver = fn() => $test_now->avoidMutation();
+		}
+		
+		$this->now_resolver = $now_resolver;
+		
+		return $this;
+	}
+	
+	protected function now(): CarbonInterface
+	{
+		return $this->now_resolver
+			? call_user_func($this->now_resolver)
+			: new CarbonImmutable(new DateTime());
+	}
+	
 	/** @return array {0: int, 1: int} */
 	protected function waitForValidTimestampAndSequence(): array
 	{
-		$timestamp = $this->diffFromEpoch(now());
+		$timestamp = $this->diffFromEpoch($this->now());
 		$sequence = $this->sequence->next($timestamp);
 		
 		// If we've used all available numbers in sequence, we'll sleep and try again
@@ -49,11 +73,15 @@ abstract class BitsFactory implements MakesBits
 	protected function validateConfiguration(): void
 	{
 		if (PHP_INT_SIZE < 8) {
-			throw new RuntimeException('Bits require 64-bit integer support.');
+			throw new RuntimeException('Bits requires 64-bit integer support.');
 		}
 		
 		if ($this->epoch->isFuture()) {
-			throw new InvalidArgumentException('Bits epoch cannot be in the future.');
+			throw new InvalidArgumentException(sprintf(
+				'Trying to use "%s" as epoch, but it is currently "%s" (Bits epoch cannot be in the future).',
+				$this->epoch->toDateTimeString(),
+				$this->epoch->nowWithSameTz()->toDateTimeString(),
+			));
 		}
 	}
 }
