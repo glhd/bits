@@ -3,7 +3,6 @@
 namespace Glhd\Bits\Config;
 
 use BadMethodCallException;
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -88,7 +87,7 @@ class GenericConfig implements Configuration
 		$multiplier = pow(10, 6 - $this->precision);
 		
 		// First, convert the timestamp from a relative integer to a full-precision timestamp
-		$precise_timestamp = (($timestamp * $this->unit) + round(((float) $epoch->format('Uu')) / $multiplier)) * $multiplier;
+		$precise_timestamp = ((float) $epoch->format('Uu')) + ($timestamp * $this->unit * $multiplier);
 		
 		// We need to then convert our full-precision timestamp into a format that PHP can
 		// parse into a precise DateTime object. The format "U.u" seems to be the best way to
@@ -222,7 +221,7 @@ class GenericConfig implements Configuration
 	protected function setPositionsAndOffsets(): void
 	{
 		$shift = 0;
-
+		
 		foreach ($this->segments->reverse() as $index => $segment) {
 			$segment->setPosition($index);
 			$segment->setOffset($shift);
