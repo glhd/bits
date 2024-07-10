@@ -17,7 +17,8 @@ interface Configuration
 	
 	public function combine(int ...$values): int;
 	
-	public function indexOf(SegmentType $type): int|array;
+	/** @return int[] */
+	public function positionOf(SegmentType $type): array;
 	
 	public function timestamp(CarbonInterface $epoch, CarbonInterface $timestamp): int;
 	

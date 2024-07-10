@@ -4,6 +4,7 @@ namespace Glhd\Bits;
 
 use Carbon\CarbonInterface;
 use DateTimeInterface;
+use Glhd\Bits\Config\Segment;
 use Glhd\Bits\Config\SegmentType;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
@@ -82,7 +83,7 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	{
 		return $this->config->timestampToDateTime(
 			epoch: $this->epoch,
-			timestamp: $this->values[$this->config->indexOf(SegmentType::Timestamp)],
+			timestamp: $this->rawSegmentValue(SegmentType::Timestamp),
 		);
 	}
 	
@@ -104,5 +105,10 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	public function jsonSerialize(): mixed
 	{
 		return (string) $this->id();
+	}
+	
+	protected function rawSegmentValue(SegmentType $segment, int $position = 0): int
+	{
+		return $this->values[$this->config->positionOf($segment)[$position]];
 	}
 }

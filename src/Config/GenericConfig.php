@@ -68,13 +68,13 @@ class GenericConfig implements Configuration
 			}, 0);
 	}
 	
-	public function indexOf(SegmentType $type): int|array
+	public function positionOf(SegmentType $type): array
 	{
 		$matches = $this->segments
 			->filter(fn(Segment $segment) => $segment->type === $type)
 			->map(fn(Segment $segment) => $segment->position());
 		
-		return 1 === $matches->count() ? $matches->first() : $matches->toArray();
+		return $matches->values()->toArray();
 	}
 	
 	public function timestamp(CarbonInterface $epoch, CarbonInterface $timestamp): int
