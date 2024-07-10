@@ -30,7 +30,7 @@ class SonyflakeFactory extends BitsFactory implements MakesSonyflakes
 	{
 		[$timestamp, $sequence] = $this->waitForValidTimestampAndSequence();
 		
-		return new Sonyflake($timestamp, $sequence, $this->machine_id, $this->config);
+		return new Sonyflake($timestamp, $sequence, $this->machine_id, $this->epoch, $this->config);
 	}
 	
 	public function makeFromTimestamp(CarbonInterface $timestamp): Sonyflake
@@ -42,7 +42,7 @@ class SonyflakeFactory extends BitsFactory implements MakesSonyflakes
 			throw new InvalidArgumentException('Hit sequence limit for timestamp.');
 		}
 		
-		return new Sonyflake($timestamp, $sequence, $this->machine_id, $this->config);
+		return new Sonyflake($timestamp, $sequence, $this->machine_id, $this->epoch, $this->config);
 	}
 	
 	public function firstForTimestamp(CarbonInterface $timestamp): Sonyflake
@@ -56,7 +56,7 @@ class SonyflakeFactory extends BitsFactory implements MakesSonyflakes
 	{
 		[$timestamp, $sequence, $machine_id] = $this->config->parse((int) $id);
 		
-		return new Sonyflake($timestamp, $sequence, $machine_id, $this->config);
+		return new Sonyflake($timestamp, $sequence, $machine_id, $this->epoch, $this->config);
 	}
 	
 	public function coerce(int|string|Bits $value): Sonyflake

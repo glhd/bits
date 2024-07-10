@@ -4,6 +4,7 @@ namespace Glhd\Bits\Tests\Unit;
 
 use Carbon\CarbonInterval;
 use Glhd\Bits\Config\SnowflakesConfig;
+use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SnowflakeFactory;
@@ -259,5 +260,31 @@ class SnowflakeTest extends TestCase
 		
 		$this->assertEquals($string, $snowflake->toJson());
 		$this->assertEquals($string, json_encode($snowflake));
+	}
+	
+	public function test_it_parses_timestamps_correctly(): void
+	{
+		// Only the 842 will be preserved because snowflakes are only
+		// millisecond-precise, not microsecond-precise
+		Date::setTestNow(now()->microseconds(842000));
+		
+		$sequence = 0;
+		
+		$factory = new SnowflakeFactory(
+			epoch: now()->microseconds(0),
+			datacenter_id: 1,
+			worker_id: 15,
+			config: app(SnowflakesConfig::class),
+			sequence: new TestingSequenceResolver($sequence)
+		);
+		$factory->setTestNow(now());
+		
+		$this->app->instance(MakesBits::class, $factory);
+		
+		$snowflake_at_epoch = $factory->make();
+		
+		$instance = $snowflake_at_epoch->toCarbon();
+		
+		$this->assertEquals(now()->format('U.u'), $instance->format('U.u'));
 	}
 }

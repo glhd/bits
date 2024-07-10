@@ -16,6 +16,7 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\DateFactory;
+use Illuminate\Support\Facades\ParallelTesting;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 
@@ -40,7 +41,7 @@ class BitsServiceProvider extends ServiceProvider
 			return new SnowflakeFactory(
 				epoch: $dates->parse($config->get('bits.epoch', '2023-01-01'), 'UTC')->startOfDay(),
 				datacenter_id: $config->get('bits.datacenter_id') ?? random_int(0, 31),
-				worker_id: $config->get('bits.worker_id') ?? random_int(0, 31),
+				worker_id: $config->get('bits.worker_id') ?? $this->generateWorkerId(31),
 				config: $container->make(SnowflakesConfig::class),
 				sequence: $container->make(ResolvesSequences::class),
 			);
@@ -52,7 +53,7 @@ class BitsServiceProvider extends ServiceProvider
 			
 			return new SonyflakeFactory(
 				epoch: $dates->parse($config->get('bits.epoch', '2023-01-01'), 'UTC')->startOfDay(),
-				machine_id: $config->get('bits.worker_id') ?? random_int(0, 65535),
+				machine_id: $config->get('bits.worker_id') ?? $this->generateWorkerId(65535),
 				config: $container->make(SonyflakesConfig::class),
 				sequence: $container->make(ResolvesSequences::class),
 			);
@@ -97,5 +98,16 @@ class BitsServiceProvider extends ServiceProvider
 	protected function packageConfigFile(): string
 	{
 		return dirname(__DIR__, 2).'/config/bits.php';
+	}
+	
+	protected function generateWorkerId(int $max): int
+	{
+		$token = $this->app->runningUnitTests() ? ParallelTesting::token() : null;
+		
+		if (is_numeric($token) && (int) $token <= $max) {
+			return (int) $token;
+		}
+		
+		return random_int(0, $max);
 	}
 }

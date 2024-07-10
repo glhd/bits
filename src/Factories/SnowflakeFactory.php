@@ -31,7 +31,7 @@ class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 	{
 		[$timestamp, $sequence] = $this->waitForValidTimestampAndSequence();
 		
-		return new Snowflake($timestamp, $this->datacenter_id, $this->worker_id, $sequence, $this->config);
+		return new Snowflake($timestamp, $this->datacenter_id, $this->worker_id, $sequence, $this->epoch, $this->config);
 	}
 	
 	public function makeFromTimestamp(CarbonInterface $timestamp): Snowflake
@@ -43,7 +43,7 @@ class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 			throw new InvalidArgumentException('Hit sequence limit for timestamp.');
 		}
 		
-		return new Snowflake($timestamp, $this->datacenter_id, $this->worker_id, $sequence, $this->config);
+		return new Snowflake($timestamp, $this->datacenter_id, $this->worker_id, $sequence, $this->epoch, $this->config);
 	}
 	
 	public function firstForTimestamp(CarbonInterface $timestamp): Snowflake
@@ -57,7 +57,7 @@ class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 	{
 		[$_, $timestamp, $datacenter_id, $worker_id, $sequence] = $this->config->parse((int) $id);
 		
-		return new Snowflake($timestamp, $datacenter_id, $worker_id, $sequence, $this->config);
+		return new Snowflake($timestamp, $datacenter_id, $worker_id, $sequence, $this->epoch, $this->config);
 	}
 	
 	public function coerce(int|string|Bits $value): Snowflake

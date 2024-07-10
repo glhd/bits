@@ -4,10 +4,13 @@ namespace Glhd\Bits\Config;
 
 use BadMethodCallException;
 use Carbon\CarbonInterface;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Glhd\Bits\Contracts\Configuration;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use RuntimeException;
 
 /** @property Collection<int, \Glhd\Bits\Config\Segment> $segments */
 class GenericConfig implements Configuration
@@ -65,9 +68,43 @@ class GenericConfig implements Configuration
 			}, 0);
 	}
 	
+	public function positionOf(SegmentType $type): array
+	{
+		$matches = $this->segments
+			->filter(fn(Segment $segment) => $segment->type === $type)
+			->map(fn(Segment $segment) => $segment->position());
+		
+		return $matches->values()->toArray();
+	}
+	
 	public function timestamp(CarbonInterface $epoch, CarbonInterface $timestamp): int
 	{
 		return (int) round(($this->getPreciseTimestamp($timestamp) - $this->getPreciseTimestamp($epoch)) / $this->unit);
+	}
+	
+	public function timestampToDateTime(DateTimeInterface $epoch, int $timestamp): DateTimeImmutable
+	{
+		// The multiplier is the inverse of the precision. For example, if the precision is 6 (i.e. 6 digits
+		// of decimal points after the second [aka microseconds]), then our multiplier is 1. On the other hand,
+		// if the precision is 3 (aka milliseconds), our multiplier needs to be 1,000, to convert milliseconds
+		// to microseconds (eg. 1,000ms = 1,000,000us).
+		$multiplier = pow(10, 6 - $this->precision);
+		
+		// First, convert the timestamp from a relative integer to a full-precision timestamp (in microseconds)
+		$precise_timestamp = ((float) $epoch->format('Uu')) + ($timestamp * $this->unit * $multiplier);
+		
+		// We need to then convert our full-precision timestamp into a format that PHP can parse into a precise
+		// DateTime object. The format "U.u" seems to be the best way to do that, so we need to split our timestamp
+		// into a unix timestamp in seconds, and exactly 6 digits of microseconds to add to that timestamp.
+		$seconds = (int) floor($precise_timestamp / 1_000_000);
+		$remaining_microseconds = ($precise_timestamp % 1_000_000) * 1_000_000;
+		$formatted_microseconds = substr(sprintf('%06d', $remaining_microseconds), 0, 6);
+		
+		if ($result = DateTimeImmutable::createFromFormat('U.u', "{$seconds}.{$formatted_microseconds}", $epoch->getTimezone())) {
+			return $result;
+		}
+		
+		throw new RuntimeException('Carbon error: '.json_encode(DateTimeImmutable::getLastErrors()));
 	}
 	
 	public function maxSequence(): int
@@ -186,7 +223,7 @@ class GenericConfig implements Configuration
 	protected function setPositionsAndOffsets(): void
 	{
 		$shift = 0;
-
+		
 		foreach ($this->segments->reverse() as $index => $segment) {
 			$segment->setPosition($index);
 			$segment->setOffset($shift);
