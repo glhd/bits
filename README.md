@@ -139,18 +139,25 @@ make Snowflakes usable in your components.
 All you need to do is to register the synthesizer in your `AppServiceProvider`:
 
 ```php
+use Glhd\Bits\Support\Livewire\SnowflakeSynth;
+use Glhd\Bits\Support\Livewire\BitsSynth;
+
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
+        // If only using Snowflakes:
         Livewire::propertySynthesizer(SnowflakeSynth::class);
+        
+        // If using Sonyflakes or a custom Bits variant:
+        Livewire::propertySynthesizer(BitsSynth::class);
     }
 }
 ```
 
+If you're using a non-Snowflake variant of Bits, you can use the `BitsSynth` 
+instead, which supports any version of Bits at the cost of storing a little
+more data.
 
 ## About 64-bit Unique IDs
 
