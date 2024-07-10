@@ -46,6 +46,13 @@ class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 		return new Snowflake($timestamp, $this->datacenter_id, $this->worker_id, $sequence, $this->config);
 	}
 	
+	public function firstForTimestamp(CarbonInterface $timestamp): Snowflake
+	{
+		$timestamp = $this->diffFromEpoch($timestamp);
+		
+		return new Snowflake($timestamp, 0, 0, 0, $this->config);
+	}
+	
 	public function fromId(int|string $id): Snowflake
 	{
 		[$_, $timestamp, $datacenter_id, $worker_id, $sequence] = $this->config->parse((int) $id);

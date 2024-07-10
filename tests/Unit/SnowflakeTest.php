@@ -172,15 +172,53 @@ class SnowflakeTest extends TestCase
 	
 	public function test_a_snowflake_can_be_created_for_a_specific_timestamp(): void
 	{
-		$factory = $this->app->make(MakesSnowflakes::class);
+		$factory = new SnowflakeFactory(
+			epoch: now(),
+			datacenter_id: 1,
+			worker_id: 15,
+			config: app(SnowflakesConfig::class),
+			sequence: new InMemorySequenceResolver(),
+		);
 		
 		$snowflake = $factory->makeFromTimestamp($factory->epoch->toImmutable()->addMillisecond());
 		
 		$this->assertEquals(1, $snowflake->timestamp);
+		$this->assertEquals(1, $snowflake->datacenter_id);
+		$this->assertEquals(15, $snowflake->worker_id);
+		$this->assertEquals(0, $snowflake->sequence);
+		
+		$snowflake = $factory->makeFromTimestamp($factory->epoch->toImmutable()->addMillisecond());
+		
+		$this->assertEquals(1, $snowflake->timestamp);
+		$this->assertEquals(1, $snowflake->datacenter_id);
+		$this->assertEquals(15, $snowflake->worker_id);
+		$this->assertEquals(1, $snowflake->sequence);
 		
 		$snowflake = $factory->makeFromTimestamp($factory->epoch->toImmutable()->addMilliseconds(42));
 		
 		$this->assertEquals(42, $snowflake->timestamp);
+		$this->assertEquals(1, $snowflake->datacenter_id);
+		$this->assertEquals(15, $snowflake->worker_id);
+		$this->assertEquals(0, $snowflake->sequence);
+	}
+	
+	public function test_a_snowflake_can_be_created_for_querying_by_a_specific_timestamp(): void
+	{
+		$factory = $this->app->make(MakesSnowflakes::class);
+		
+		$snowflake = $factory->firstForTimestamp($factory->epoch->toImmutable()->addMillisecond());
+		
+		$this->assertEquals(1, $snowflake->timestamp);
+		$this->assertEquals(0, $snowflake->datacenter_id);
+		$this->assertEquals(0, $snowflake->worker_id);
+		$this->assertEquals(0, $snowflake->sequence);
+		
+		$snowflake = $factory->firstForTimestamp($factory->epoch->toImmutable()->addMilliseconds(42));
+		
+		$this->assertEquals(42, $snowflake->timestamp);
+		$this->assertEquals(0, $snowflake->datacenter_id);
+		$this->assertEquals(0, $snowflake->worker_id);
+		$this->assertEquals(0, $snowflake->sequence);
 	}
 	
 	public function test_a_snowflake_can_be_serialized_to_json(): void
