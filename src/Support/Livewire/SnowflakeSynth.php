@@ -1,4 +1,4 @@
-<?PHP
+<?php
 
 namespace Glhd\Bits\Support\Livewire;
 
