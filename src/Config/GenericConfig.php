@@ -84,21 +84,23 @@ class GenericConfig implements Configuration
 	
 	public function timestampToDateTime(DateTimeInterface $epoch, int $timestamp): DateTimeImmutable
 	{
+		// The multiplier is the inverse of the precision. For example, if the precision is 6 (i.e. 6 digits
+		// of decimal points after the second [aka microseconds]), then our multiplier is 1. On the other hand,
+		// if the precision is 3 (aka milliseconds), our multiplier needs to be 1,000, to convert milliseconds
+		// to microseconds (eg. 1,000ms = 1,000,000us). 
 		$multiplier = pow(10, 6 - $this->precision);
 		
-		// First, convert the timestamp from a relative integer to a full-precision timestamp
+		// First, convert the timestamp from a relative integer to a full-precision timestamp (in microseconds)
 		$precise_timestamp = ((float) $epoch->format('Uu')) + ($timestamp * $this->unit * $multiplier);
 		
-		// We need to then convert our full-precision timestamp into a format that PHP can
-		// parse into a precise DateTime object. The format "U.u" seems to be the best way to
-		// do that, so we need to split our timestamp into a unix timestamp in seconds, and
-		// any remaining microseconds to add to that timestamp.
+		// We need to then convert our full-precision timestamp into a format that PHP can parse into a precise
+		// DateTime object. The format "U.u" seems to be the best way to do that, so we need to split our timestamp
+		// into a unix timestamp in seconds, and exactly 6 digits of microseconds to add to that timestamp.
 		$seconds = (int) floor($precise_timestamp / 1_000_000);
 		$remaining_microseconds = ($precise_timestamp % 1_000_000) * 1_000_000;
 		$formatted_microseconds = substr(sprintf('%06d', $remaining_microseconds), 0, 6);
-		$formatted_for_parsing = "{$seconds}.{$formatted_microseconds}";
 		
-		if ($result = DateTimeImmutable::createFromFormat('U.u', $formatted_for_parsing, $epoch->getTimezone())) {
+		if ($result = DateTimeImmutable::createFromFormat('U.u', "{$seconds}.{$formatted_microseconds}", $epoch->getTimezone())) {
 			return $result;
 		}
 		
