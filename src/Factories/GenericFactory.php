@@ -52,8 +52,8 @@ class GenericFactory extends BitsFactory
 		$timestamp = $this->diffFromEpoch($timestamp);
 		
 		$values = $this->config->organize(
-			ids: new WorkerIds(...array_map(fn() => 0, $this->ids->ids)), 
-			timestamp: $timestamp, 
+			ids: new WorkerIds(...array_map(fn() => 0, $this->ids->ids)),
+			timestamp: $timestamp,
 			sequence: 0
 		);
 		
