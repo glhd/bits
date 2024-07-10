@@ -2,6 +2,7 @@
 
 namespace Glhd\Bits;
 
+use Carbon\CarbonInterface;
 use Glhd\Bits\Config\SnowflakesConfig;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 
@@ -27,11 +28,13 @@ class Snowflake extends Bits
 		public readonly int $datacenter_id,
 		public readonly int $worker_id,
 		public readonly int $sequence,
+		CarbonInterface $epoch,
 		?SnowflakesConfig $config = null,
 	) {
 		parent::__construct(
 			values: [0, $this->timestamp, $this->datacenter_id, $this->worker_id, $this->sequence],
 			config: $config ?? app(SnowflakesConfig::class),
+			epoch: $epoch,
 		);
 	}
 
