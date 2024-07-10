@@ -4,7 +4,6 @@ namespace Glhd\Bits;
 
 use Carbon\CarbonInterface;
 use DateTimeInterface;
-use Glhd\Bits\Config\Segment;
 use Glhd\Bits\Config\SegmentType;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
