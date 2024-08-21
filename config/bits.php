@@ -33,6 +33,21 @@ return [
 	
 	/*
 	|--------------------------------------------------------------------------
+	| AWS Lambda (and Laravel Vapor)
+	|--------------------------------------------------------------------------
+	|
+	| Snowflakes/etc rely on unique datacenter and worker IDs to operate. 
+	| Because AWS lambdas are different machines each time, it's impossible 
+	| to assign each a unique worker/device ID.
+	|
+	| Bits addresses this with a special lambda ID resolver, which assigns
+	| and locks IDs via your cache.
+	*/
+	
+	'lambda' => (bool) env('BITS_LAMBDA', false),
+	
+	/*
+	|--------------------------------------------------------------------------
 	| Worker ID
 	|--------------------------------------------------------------------------
 	|
