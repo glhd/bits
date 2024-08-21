@@ -62,4 +62,20 @@ class CacheIdResolverTest extends TestCase
 			$resolver->get(1, 1);
 		}, RuntimeException::class);
 	}
+	
+	public function test_it_releases_sequences_on_unset(): void
+	{
+		$store = new ArrayStore();
+		
+		$resolver = new CacheResolver($store, app(DateFactory::class), 0b11);
+		$resolver->get(1, 1);
+		
+		$reserved = $store->get('glhd-bits-ids:reserved');
+		$this->assertTrue(isset($reserved[0]));
+		
+		unset($resolver);
+		
+		$reserved = $store->get('glhd-bits-ids:reserved');
+		$this->assertEquals([], $reserved);
+	}
 }

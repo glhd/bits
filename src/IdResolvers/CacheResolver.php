@@ -2,6 +2,7 @@
 
 namespace Glhd\Bits\IdResolvers;
 
+use Closure;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\DateFactory;
@@ -29,8 +30,7 @@ class CacheResolver extends IdResolver
 		// get the current list of reserved IDs, and either find one that hasn't been
 		// reserved, or one where the reservation is expired.
 		
-		return $this->cache->lock('glhd-bits-ids:lock')
-			->block(5, function() {
+		return $this->lock(function() {
 				$reserved = $this->cache->get('glhd-bits-ids:reserved') ?? [];
 				$id = $this->firstAvailable($reserved) ?? $this->findExpired($reserved);
 				
@@ -42,6 +42,26 @@ class CacheResolver extends IdResolver
 				
 				throw new RuntimeException('Unable to acquire a unique worker ID.');
 			});
+	}
+	
+	protected function release(): void
+	{
+		if (null === $this->value) {
+			return;
+		}
+		
+		$this->lock(function() {
+			$reserved = $this->cache->get('glhd-bits-ids:reserved') ?? [];
+			
+			unset($reserved[$this->value]);
+			
+			$this->cache->forever('glhd-bits-ids:reserved', $reserved);
+		}, 1);
+	}
+	
+	protected function lock(Closure $callback, int $seconds = 5): mixed
+	{
+		return $this->cache->lock('glhd-bits-ids:lock')->block($seconds, $callback);
 	}
 	
 	protected function firstAvailable(array $reserved): ?int
@@ -66,5 +86,10 @@ class CacheResolver extends IdResolver
 			}, [PHP_INT_MAX, null]);
 		
 		return $id;
+	}
+	
+	public function __destruct()
+	{
+		$this->release();
 	}
 }
