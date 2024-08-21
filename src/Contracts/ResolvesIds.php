@@ -6,5 +6,5 @@ use Glhd\Bits\Config\WorkerIds;
 
 interface ResolvesIds
 {
-	public function get(): WorkerIds;
+	public function get(...$lengths): WorkerIds;
 }

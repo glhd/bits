@@ -8,10 +8,14 @@ use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\MakesSonyflakes;
+use Glhd\Bits\Contracts\ResolvesIds;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SnowflakeFactory;
 use Glhd\Bits\Factories\SonyflakeFactory;
+use Glhd\Bits\IdResolvers\CacheResolver;
+use Glhd\Bits\IdResolvers\StaticResolver;
 use Glhd\Bits\SequenceResolvers\CacheSequenceResolver;
+use Illuminate\Cache\CacheManager;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Schema\Blueprint;
@@ -34,14 +38,59 @@ class BitsServiceProvider extends ServiceProvider
 		$this->app->singleton(SnowflakesConfig::class);
 		$this->app->singleton(SonyflakesConfig::class);
 		
+		$this->app->singleton(CacheResolver::class, function(Container $container) {
+			$config = $container->make(Repository::class);
+			$cache = $container->make(CacheManager::class);
+			$dates = $container->make(DateFactory::class);
+			
+			$format = $config->get('bits.format', 'snowflake');
+			
+			return match ($format) {
+				'snowflake', 'snowflakes' => new CacheResolver($cache, $dates, 0b1111111111),
+				'sonyflake', 'sonyflakes' => new CacheResolver($cache, $dates, 0b1111111111111111),
+				default => value(fn() => throw new InvalidArgumentException("Unknown bits format: '{$format}'")),
+			};
+		});
+		
+		$this->app->singleton(StaticResolver::class, function(Container $container) {
+			$config = $container->make(Repository::class);
+			$format = $config->get('bits.format', 'snowflake');
+			
+			return match ($format) {
+				'snowflake', 'snowflakes' => new StaticResolver(
+					$config->get('bits.datacenter_id') ?? random_int(0, 0b11111),
+					$config->get('bits.worker_id') ?? $this->generateWorkerId(0b11111)
+				),
+				'sonyflake', 'sonyflakes' => new StaticResolver(
+					$config->get('bits.worker_id') ?? $this->generateWorkerId(0b1111111111111111)
+				),
+				default => value(fn() => throw new InvalidArgumentException("Unknown bits format: '{$format}'")),
+			};
+		});
+		
+		$this->app->singleton(ResolvesIds::class, function(Container $container) {
+			$config = $container->make(Repository::class);
+			
+			$lambda = match ($config->get('bits.lambda', 'autodetect')) {
+				true, 1, '1' => true,
+				'autodetect' => ! empty(getenv('AWS_LAMBDA_FUNCTION_NAME')),
+				default => false,
+			};
+			
+			return $lambda
+				? $container->make(CacheResolver::class)
+				: $container->make(StaticResolver::class);
+		});
+		
 		$this->app->singleton(MakesSnowflakes::class, function(Container $container) {
 			$config = $container->make(Repository::class);
 			$dates = $container->make(DateFactory::class);
+			$ids = $container->make(ResolvesIds::class);
 			
 			return new SnowflakeFactory(
 				epoch: $dates->parse($config->get('bits.epoch', '2023-01-01'), 'UTC')->startOfDay(),
-				datacenter_id: $config->get('bits.datacenter_id') ?? random_int(0, 31),
-				worker_id: $config->get('bits.worker_id') ?? $this->generateWorkerId(31),
+				datacenter_id: $ids->get(5, 5)->first(),
+				worker_id: $ids->get(5, 5)->second(),
 				config: $container->make(SnowflakesConfig::class),
 				sequence: $container->make(ResolvesSequences::class),
 			);
@@ -50,18 +99,18 @@ class BitsServiceProvider extends ServiceProvider
 		$this->app->singleton(MakesSonyflakes::class, function(Container $container) {
 			$config = $container->make(Repository::class);
 			$dates = $container->make(DateFactory::class);
+			$ids = $container->make(ResolvesIds::class);
 			
 			return new SonyflakeFactory(
 				epoch: $dates->parse($config->get('bits.epoch', '2023-01-01'), 'UTC')->startOfDay(),
-				machine_id: $config->get('bits.worker_id') ?? $this->generateWorkerId(65535),
+				machine_id: $ids->get(16)->first(),
 				config: $container->make(SonyflakesConfig::class),
 				sequence: $container->make(ResolvesSequences::class),
 			);
 		});
 		
 		$this->app->singleton(MakesBits::class, function(Container $container) {
-			$format = $container->make(Repository::class)
-				->get('bits.format', 'snowflake');
+			$format = $container->make(Repository::class)->get('bits.format', 'snowflake');
 			
 			return match ($format) {
 				'snowflake', 'snowflakes' => $container->make(MakesSnowflakes::class),

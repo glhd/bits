@@ -42,9 +42,11 @@ return [
 	|
 	| Bits addresses this with a special lambda ID resolver, which assigns
 	| and locks IDs via your cache.
+	| 
+	| Options: true, false, or "autodetect"
 	*/
 	
-	'lambda' => (bool) env('BITS_LAMBDA', false),
+	'lambda' => env('BITS_LAMBDA', 'autodetect'),
 	
 	/*
 	|--------------------------------------------------------------------------

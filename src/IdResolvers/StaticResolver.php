@@ -14,7 +14,7 @@ class StaticResolver implements ResolvesIds
 		$this->ids = new WorkerIds(...$ids);
 	}
 	
-	public function get(): WorkerIds
+	public function get(...$lengths): WorkerIds
 	{
 		return $this->ids;
 	}
