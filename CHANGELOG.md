@@ -5,16 +5,18 @@ format. This project adheres to [Semantic Versioning](https://semver.org/spec/v2
 
 ## [Unreleased]
 
+## [0.5.0] - 2024-07-10
+
 ### Added
 
-- Added support for `$snowflake->toDateTime()` and `$snowflake->toCarbon()` which allows you to get the timestamp associated with the ID.
-- Added `firstForTimestamp($timestamp)` method that lets you create an ID that corresponds to the lowest possible ID at that timestamp (useful for querying)
-- Added Livewire synths
+-   Added support for `$snowflake->toDateTime()` and `$snowflake->toCarbon()` which allows you to get the timestamp associated with the ID.
+-   Added `firstForTimestamp($timestamp)` method that lets you create an ID that corresponds to the lowest possible ID at that timestamp (useful for querying)
+-   Added Livewire synths
 
 ### Changed
 
-- Bits no longer follows `Carbon::setTestNow` and instead provides its own `setTestNow` method ([see reasoning](https://github.com/glhd/bits/pull/8)).
-- Added `.gitattributes` to minimize bundle size
+-   Bits no longer follows `Carbon::setTestNow` and instead provides its own `setTestNow` method ([see reasoning](https://github.com/glhd/bits/pull/8)).
+-   Added `.gitattributes` to minimize bundle size
 
 ## [0.4.1] - 2024-03-25
 
@@ -55,7 +57,9 @@ format. This project adheres to [Semantic Versioning](https://semver.org/spec/v2
 -   `Fixed` for any bug fixes. 
 -   `Security` in case of vulnerabilities.
 
-[Unreleased]: https://github.com/glhd/bits/compare/0.4.1...HEAD
+[Unreleased]: https://github.com/glhd/bits/compare/0.5.0...HEAD
+
+[0.5.0]: https://github.com/glhd/bits/compare/0.4.1...0.5.0
 
 [0.4.1]: https://github.com/glhd/bits/compare/0.4.0...0.4.1
 
