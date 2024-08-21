@@ -18,30 +18,30 @@ class CacheIdResolverTest extends TestCase
 		$store = new ArrayStore();
 		
 		// Should get 0b00
-		$resolver = new CacheResolver($store, app(DateFactory::class), 0b11);
-		$this->assertEquals(0b00, $resolver->get(1, 1)->first());
-		$this->assertEquals(0b00, $resolver->get(1, 1)->second());
+		$resolver1 = new CacheResolver($store, app(DateFactory::class), 0b11);
+		$this->assertEquals(0b00, $resolver1->get(1, 1)->first());
+		$this->assertEquals(0b00, $resolver1->get(1, 1)->second());
 		
 		Date::setTestNow(now()->addMinutes(10));
 		
 		// Should get 0b01
-		$resolver = new CacheResolver($store, app(DateFactory::class), 0b11);
-		$this->assertEquals(0b00, $resolver->get(1, 1)->first());
-		$this->assertEquals(0b01, $resolver->get(1, 1)->second());
+		$resolver2 = new CacheResolver($store, app(DateFactory::class), 0b11);
+		$this->assertEquals(0b00, $resolver2->get(1, 1)->first());
+		$this->assertEquals(0b01, $resolver2->get(1, 1)->second());
 		
 		Date::setTestNow(now()->addMinutes(10));
 		
 		// Should get 0b10
-		$resolver = new CacheResolver($store, app(DateFactory::class), 0b11);
-		$this->assertEquals(0b01, $resolver->get(1, 1)->first());
-		$this->assertEquals(0b00, $resolver->get(1, 1)->second());
+		$resolver3 = new CacheResolver($store, app(DateFactory::class), 0b11);
+		$this->assertEquals(0b01, $resolver3->get(1, 1)->first());
+		$this->assertEquals(0b00, $resolver3->get(1, 1)->second());
 		
 		Date::setTestNow(now()->addMinutes(10));
 		
 		// Should get 0b11
-		$resolver = new CacheResolver($store, app(DateFactory::class), 0b11);
-		$this->assertEquals(0b01, $resolver->get(1, 1)->first());
-		$this->assertEquals(0b01, $resolver->get(1, 1)->second());
+		$resolver4 = new CacheResolver($store, app(DateFactory::class), 0b11);
+		$this->assertEquals(0b01, $resolver4->get(1, 1)->first());
+		$this->assertEquals(0b01, $resolver4->get(1, 1)->second());
 		
 		// Now we've run out of IDs… should throw
 		$this->assertThrows(function() use ($store) {
@@ -52,9 +52,9 @@ class CacheIdResolverTest extends TestCase
 		Date::setTestNow(now()->addMinutes(30));
 		
 		// 0b00 has not expired, so we should be able to acquire it
-		$resolver = new CacheResolver($store, app(DateFactory::class), 0b11);
-		$this->assertEquals(0b00, $resolver->get(1, 1)->first());
-		$this->assertEquals(0b00, $resolver->get(1, 1)->second());
+		$resolver5 = new CacheResolver($store, app(DateFactory::class), 0b11);
+		$this->assertEquals(0b00, $resolver5->get(1, 1)->first());
+		$this->assertEquals(0b00, $resolver5->get(1, 1)->second());
 		
 		// But everything else is locked, so we should throw again
 		$this->assertThrows(function() use ($store) {
