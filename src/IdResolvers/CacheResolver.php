@@ -31,17 +31,17 @@ class CacheResolver extends IdResolver
 		// reserved, or one where the reservation is expired.
 		
 		return $this->lock(function() {
-				$reserved = $this->cache->get('glhd-bits-ids:reserved') ?? [];
-				$id = $this->firstAvailable($reserved) ?? $this->findExpired($reserved);
+			$reserved = $this->cache->get('glhd-bits-ids:reserved') ?? [];
+			$id = $this->firstAvailable($reserved) ?? $this->findExpired($reserved);
 				
-				if (null !== $id) {
-					$reserved[$id] = $this->dates->now()->addHour()->unix();
-					$this->cache->forever('glhd-bits-ids:reserved', $reserved);
-					return $id;
-				}
+			if (null !== $id) {
+				$reserved[$id] = $this->dates->now()->addHour()->unix();
+				$this->cache->forever('glhd-bits-ids:reserved', $reserved);
+				return $id;
+			}
 				
-				throw new RuntimeException('Unable to acquire a unique worker ID.');
-			});
+			throw new RuntimeException('Unable to acquire a unique worker ID.');
+		});
 	}
 	
 	protected function release(): void
