@@ -3,9 +3,9 @@
 namespace Glhd\Bits\IdResolvers;
 
 use Glhd\Bits\Config\WorkerIds;
-use Glhd\Bits\Contracts\ResolvesIds;
+use Glhd\Bits\Contracts\ResolvesWorkerIds;
 
-abstract class IdResolver implements ResolvesIds
+abstract class WorkerIdResolver implements ResolvesWorkerIds
 {
 	abstract protected function value(): int;
 	

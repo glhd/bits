@@ -3,9 +3,9 @@
 namespace Glhd\Bits\IdResolvers;
 
 use Glhd\Bits\Config\WorkerIds;
-use Glhd\Bits\Contracts\ResolvesIds;
+use Glhd\Bits\Contracts\ResolvesWorkerIds;
 
-class StaticResolver implements ResolvesIds
+class StaticWorkerIdResolver implements ResolvesWorkerIds
 {
 	protected WorkerIds $ids;
 	

@@ -4,7 +4,7 @@ namespace Glhd\Bits\Contracts;
 
 use Glhd\Bits\Config\WorkerIds;
 
-interface ResolvesIds
+interface ResolvesWorkerIds
 {
 	public function get(...$lengths): WorkerIds;
 }

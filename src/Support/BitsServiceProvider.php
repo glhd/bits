@@ -8,12 +8,12 @@ use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
 use Glhd\Bits\Contracts\MakesSnowflakes;
 use Glhd\Bits\Contracts\MakesSonyflakes;
-use Glhd\Bits\Contracts\ResolvesIds;
+use Glhd\Bits\Contracts\ResolvesWorkerIds;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Glhd\Bits\Factories\SnowflakeFactory;
 use Glhd\Bits\Factories\SonyflakeFactory;
-use Glhd\Bits\IdResolvers\CacheResolver;
-use Glhd\Bits\IdResolvers\StaticResolver;
+use Glhd\Bits\IdResolvers\CacheLockWorkerIdResolver;
+use Glhd\Bits\IdResolvers\StaticWorkerIdResolver;
 use Glhd\Bits\SequenceResolvers\CacheSequenceResolver;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Contracts\Config\Repository;
@@ -38,7 +38,7 @@ class BitsServiceProvider extends ServiceProvider
 		$this->app->singleton(SnowflakesConfig::class);
 		$this->app->singleton(SonyflakesConfig::class);
 		
-		$this->app->singleton(CacheResolver::class, function(Container $container) {
+		$this->app->singleton(CacheLockWorkerIdResolver::class, function(Container $container) {
 			$config = $container->make(Repository::class);
 			$cache = $container->make(CacheManager::class)->store();
 			$dates = $container->make(DateFactory::class);
@@ -46,29 +46,29 @@ class BitsServiceProvider extends ServiceProvider
 			$format = $config->get('bits.format', 'snowflake');
 			
 			return match ($format) {
-				'snowflake', 'snowflakes' => new CacheResolver($cache, $dates, 0b1111111111),
-				'sonyflake', 'sonyflakes' => new CacheResolver($cache, $dates, 0b1111111111111111),
+				'snowflake', 'snowflakes' => new CacheLockWorkerIdResolver($cache, $dates, 0b1111111111),
+				'sonyflake', 'sonyflakes' => new CacheLockWorkerIdResolver($cache, $dates, 0b1111111111111111),
 				default => value(fn() => throw new InvalidArgumentException("Unknown bits format: '{$format}'")),
 			};
 		});
 		
-		$this->app->singleton(StaticResolver::class, function(Container $container) {
+		$this->app->singleton(StaticWorkerIdResolver::class, function(Container $container) {
 			$config = $container->make(Repository::class);
 			$format = $config->get('bits.format', 'snowflake');
 			
 			return match ($format) {
-				'snowflake', 'snowflakes' => new StaticResolver(
+				'snowflake', 'snowflakes' => new StaticWorkerIdResolver(
 					$config->get('bits.datacenter_id') ?? random_int(0, 0b11111),
 					$config->get('bits.worker_id') ?? $this->generateWorkerId(0b11111)
 				),
-				'sonyflake', 'sonyflakes' => new StaticResolver(
+				'sonyflake', 'sonyflakes' => new StaticWorkerIdResolver(
 					$config->get('bits.worker_id') ?? $this->generateWorkerId(0b1111111111111111)
 				),
 				default => value(fn() => throw new InvalidArgumentException("Unknown bits format: '{$format}'")),
 			};
 		});
 		
-		$this->app->singleton(ResolvesIds::class, function(Container $container) {
+		$this->app->singleton(ResolvesWorkerIds::class, function(Container $container) {
 			$config = $container->make(Repository::class);
 			
 			$lambda = match ($config->get('bits.lambda', 'autodetect')) {
@@ -78,14 +78,14 @@ class BitsServiceProvider extends ServiceProvider
 			};
 			
 			return $lambda
-				? $container->make(CacheResolver::class)
-				: $container->make(StaticResolver::class);
+				? $container->make(CacheLockWorkerIdResolver::class)
+				: $container->make(StaticWorkerIdResolver::class);
 		});
 		
 		$this->app->singleton(MakesSnowflakes::class, function(Container $container) {
 			$config = $container->make(Repository::class);
 			$dates = $container->make(DateFactory::class);
-			$ids = $container->make(ResolvesIds::class);
+			$ids = $container->make(ResolvesWorkerIds::class);
 			
 			return new SnowflakeFactory(
 				epoch: $dates->parse($config->get('bits.epoch', '2023-01-01'), 'UTC')->startOfDay(),
@@ -99,7 +99,7 @@ class BitsServiceProvider extends ServiceProvider
 		$this->app->singleton(MakesSonyflakes::class, function(Container $container) {
 			$config = $container->make(Repository::class);
 			$dates = $container->make(DateFactory::class);
-			$ids = $container->make(ResolvesIds::class);
+			$ids = $container->make(ResolvesWorkerIds::class);
 			
 			return new SonyflakeFactory(
 				epoch: $dates->parse($config->get('bits.epoch', '2023-01-01'), 'UTC')->startOfDay(),

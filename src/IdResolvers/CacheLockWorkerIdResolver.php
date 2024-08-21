@@ -8,7 +8,7 @@ use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\DateFactory;
 use RuntimeException;
 
-class CacheResolver extends IdResolver
+class CacheLockWorkerIdResolver extends WorkerIdResolver
 {
 	protected ?int $value = null;
 	
