@@ -2,7 +2,8 @@
 
 namespace Glhd\Bits\IdResolvers;
 
-use Illuminate\Cache\CacheManager;
+use Illuminate\Contracts\Cache\LockProvider;
+use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\DateFactory;
 use RuntimeException;
 
@@ -11,7 +12,7 @@ class CacheResolver extends IdResolver
 	protected ?int $value = null;
 	
 	public function __construct(
-		protected CacheManager $cache,
+		protected Store&LockProvider $cache,
 		protected DateFactory $dates,
 		protected int $max = 0b1111111111,
 	) {
@@ -30,9 +31,10 @@ class CacheResolver extends IdResolver
 		
 		return $this->cache->lock('glhd-bits-ids:lock')
 			->block(5, function() {
-				$reserved = $this->cache->get('glhd-bits-ids:reserved', fn() => []);
+				$reserved = $this->cache->get('glhd-bits-ids:reserved') ?? [];
+				$id = $this->firstAvailable($reserved) ?? $this->findExpired($reserved);
 				
-				if ($id = $this->firstAvailable($reserved) ?? $this->findExpired($reserved)) {
+				if (null !== $id) {
 					$reserved[$id] = $this->dates->now()->addHour()->unix();
 					$this->cache->forever('glhd-bits-ids:reserved', $reserved);
 					return $id;

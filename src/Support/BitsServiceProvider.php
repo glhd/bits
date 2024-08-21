@@ -40,7 +40,7 @@ class BitsServiceProvider extends ServiceProvider
 		
 		$this->app->singleton(CacheResolver::class, function(Container $container) {
 			$config = $container->make(Repository::class);
-			$cache = $container->make(CacheManager::class);
+			$cache = $container->make(CacheManager::class)->store();
 			$dates = $container->make(DateFactory::class);
 			
 			$format = $config->get('bits.format', 'snowflake');
