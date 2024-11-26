@@ -49,7 +49,8 @@ class Bits implements Expression, Castable, Jsonable, JsonSerializable
 	{
 		return match (reset($arguments)) {
 			'sonyflake', 'sonyflakes' => new BitsCast(app(MakesSonyflakes::class)),
-			default => new BitsCast(app(MakesSnowflakes::class)),
+			'snowflake', 'snowflakes' => new BitsCast(app(MakesSnowflakes::class)),
+			default => new BitsCast(app(MakesBits::class)),
 		};
 	}
 	

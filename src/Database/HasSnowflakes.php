@@ -2,12 +2,18 @@
 
 namespace Glhd\Bits\Database;
 
-use Glhd\Bits\Snowflake;
+use Glhd\Bits\Bits;
+use Glhd\Bits\Contracts\MakesBits;
 
+/**
+ * @mixin \Illuminate\Database\Eloquent\Model
+ */
 trait HasSnowflakes
 {
 	protected function initializeHasSnowflakes(): void
 	{
+		$this->mergeCasts(array_fill_keys($this->uniqueIds(), Bits::class));
+
 		if (property_exists($this, 'usesUniqueIds')) {
 			$this->usesUniqueIds = true;
 			return;
@@ -23,7 +29,7 @@ trait HasSnowflakes
 	
 	public function newUniqueId()
 	{
-		return Snowflake::make()->id();
+		return app(MakesBits::class)->make()->id();
 	}
 	
 	public function getIncrementing()
