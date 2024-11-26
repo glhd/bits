@@ -38,7 +38,7 @@
     }
   },
   "scripts": {
-    "pest": "vendor/bin/pest",
+    "test": "vendor/bin/phpunit",
     "fix-style": "vendor/bin/php-cs-fixer fix",
     "check-style": "vendor/bin/php-cs-fixer fix --diff --dry-run"
   },
