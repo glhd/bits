@@ -15,9 +15,28 @@ class CacheSequenceResolver implements ResolvesSequences
 	public function next(int $timestamp): int
 	{
 		$key = "glhd-bits-seq:{$timestamp}";
-		
-		$this->cache->add($key, 0, now()->addSeconds(10));
-		
+
+		$this->withoutSerializationOrCompression(
+			fn () => $this->cache->add($key, 0, now()->addSeconds(10))
+		);
+
 		return $this->cache->increment($key) - 1;
+	}
+
+	protected function withoutSerializationOrCompression(callable $callback)
+	{
+		$store = $this->cache->getStore();
+		
+		if (! $store instanceof RedisStore) {
+			return $callback();
+		}
+		
+		$connection = $store->connection();
+		
+		if (! $connection instanceof PhpRedisConnection) {
+			return $callback();
+		}
+		
+		return $connection->withoutSerializationOrCompression($callback);
 	}
 }
