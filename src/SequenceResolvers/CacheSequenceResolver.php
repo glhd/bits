@@ -17,7 +17,7 @@ class CacheSequenceResolver implements ResolvesSequences
 		$key = "glhd-bits-seq:{$timestamp}";
 
 		$this->withoutSerializationOrCompression(
-			fn () => $this->cache->add($key, 0, now()->addSeconds(10))
+			fn() => $this->cache->add($key, 0, now()->addSeconds(10))
 		);
 
 		return $this->cache->increment($key) - 1;
