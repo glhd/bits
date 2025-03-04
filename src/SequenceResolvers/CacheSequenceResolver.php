@@ -11,7 +11,7 @@ use Redis;
 class CacheSequenceResolver implements ResolvesSequences
 {
 	public function __construct(
-		protected Repository $cache
+		protected Repository $cache,
 	) {
 	}
 
@@ -20,7 +20,7 @@ class CacheSequenceResolver implements ResolvesSequences
 		$key = "glhd-bits-seq:{$timestamp}";
 
 		$this->withoutSerializationOrCompression(
-			fn() => $this->cache->add($key, 0, now()->addSeconds(10))
+			fn() => $this->cache->add($key, 0, now()->addSeconds(10)),
 		);
 
 		return $this->cache->increment($key) - 1;
@@ -28,6 +28,10 @@ class CacheSequenceResolver implements ResolvesSequences
 
 	protected function withoutSerializationOrCompression(callable $callback)
 	{
+		// This is a copied from `RateLimiter::withoutSerializationOrCompression` and
+		// `PacksPhpRedisValues::withoutSerializationOrCompression` for backwards-compatibility
+		// reasons (the feature wasn't added until Laravel 11.41.0).
+
 		$store = $this->cache->getStore();
 
 		if (! $store instanceof RedisStore) {
@@ -42,42 +46,40 @@ class CacheSequenceResolver implements ResolvesSequences
 
 		$client = $connection->client();
 
-		$oldSerializer = null;
-
+		$old_serializer = null;
 		if ($this->serialized($client)) {
-			$oldSerializer = $client->getOption($client::OPT_SERIALIZER);
+			$old_serializer = $client->getOption($client::OPT_SERIALIZER);
 			$client->setOption($client::OPT_SERIALIZER, $client::SERIALIZER_NONE);
 		}
 
-		$oldCompressor = null;
-
+		$old_compressor = null;
 		if ($this->compressed($client)) {
-			$oldCompressor = $client->getOption($client::OPT_COMPRESSION);
+			$old_compressor = $client->getOption($client::OPT_COMPRESSION);
 			$client->setOption($client::OPT_COMPRESSION, $client::COMPRESSION_NONE);
 		}
 
 		try {
 			return $callback();
 		} finally {
-			if ($oldSerializer !== null) {
-				$client->setOption($client::OPT_SERIALIZER, $oldSerializer);
+			if (null !== $old_serializer) {
+				$client->setOption($client::OPT_SERIALIZER, $old_serializer);
 			}
-
-			if ($oldCompressor !== null) {
-				$client->setOption($client::OPT_COMPRESSION, $oldCompressor);
+			
+			if (null !== $old_compressor) {
+				$client->setOption($client::OPT_COMPRESSION, $old_compressor);
 			}
 		}
 	}
 
-	public function serialized($client): bool
+	public function serialized(Redis $client): bool
 	{
-		return defined('Redis::OPT_SERIALIZER') &&
-			$client->getOption(Redis::OPT_SERIALIZER) !== Redis::SERIALIZER_NONE;
+		return defined('Redis::OPT_SERIALIZER')
+			&& $client->getOption(Redis::OPT_SERIALIZER) !== Redis::SERIALIZER_NONE;
 	}
 
-	public function compressed($client): bool
+	public function compressed(Redis $client): bool
 	{
-		return defined('Redis::OPT_COMPRESSION') &&
-			$client->getOption(Redis::OPT_COMPRESSION) !== Redis::COMPRESSION_NONE;
+		return defined('Redis::OPT_COMPRESSION')
+			&& $client->getOption(Redis::OPT_COMPRESSION) !== Redis::COMPRESSION_NONE;
 	}
 }
