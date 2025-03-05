@@ -7,6 +7,7 @@ use Illuminate\Cache\RedisStore;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Redis\Connections\PhpRedisConnection;
 use Redis;
+use RedisCluster;
 
 class CacheSequenceResolver implements ResolvesSequences
 {
@@ -48,36 +49,36 @@ class CacheSequenceResolver implements ResolvesSequences
 
 		$old_serializer = null;
 		if ($this->serialized($client)) {
-			$old_serializer = $client->getOption($client::OPT_SERIALIZER);
-			$client->setOption($client::OPT_SERIALIZER, $client::SERIALIZER_NONE);
+			$old_serializer = $client->getOption(Redis::OPT_SERIALIZER);
+			$client->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_NONE);
 		}
 
 		$old_compressor = null;
 		if ($this->compressed($client)) {
-			$old_compressor = $client->getOption($client::OPT_COMPRESSION);
-			$client->setOption($client::OPT_COMPRESSION, $client::COMPRESSION_NONE);
+			$old_compressor = $client->getOption(Redis::OPT_COMPRESSION);
+			$client->setOption(Redis::OPT_COMPRESSION, Redis::COMPRESSION_NONE);
 		}
 
 		try {
 			return $callback();
 		} finally {
 			if (null !== $old_serializer) {
-				$client->setOption($client::OPT_SERIALIZER, $old_serializer);
+				$client->setOption(Redis::OPT_SERIALIZER, $old_serializer);
 			}
 			
 			if (null !== $old_compressor) {
-				$client->setOption($client::OPT_COMPRESSION, $old_compressor);
+				$client->setOption(Redis::OPT_COMPRESSION, $old_compressor);
 			}
 		}
 	}
 
-	public function serialized(Redis $client): bool
+	public function serialized(Redis|RedisCluster $client): bool
 	{
 		return defined('Redis::OPT_SERIALIZER')
 			&& $client->getOption(Redis::OPT_SERIALIZER) !== Redis::SERIALIZER_NONE;
 	}
 
-	public function compressed(Redis $client): bool
+	public function compressed(Redis|RedisCluster $client): bool
 	{
 		return defined('Redis::OPT_COMPRESSION')
 			&& $client->getOption(Redis::OPT_COMPRESSION) !== Redis::COMPRESSION_NONE;
