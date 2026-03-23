@@ -219,7 +219,7 @@ class CustomTest extends TestCase
 		$this->assertEquals([42, 0, 0], $bits->values->all());
 	}
 	
-	protected function getBitsFactory(int $id, ResolvesSequences $sequence = null): GenericFactory
+	protected function getBitsFactory(int $id, ?ResolvesSequences $sequence = null): GenericFactory
 	{
 		$config = new GenericConfig(
 			precision: 6,
