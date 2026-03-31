@@ -46,4 +46,9 @@ abstract class TestCase extends Orchestra
 	{
 		return 'America/New_York';
 	}
+
+	protected function usesSonyflakes($app): void
+	{
+		$app['config']->set('bits.format', 'sonyflake');
+	}
 }
