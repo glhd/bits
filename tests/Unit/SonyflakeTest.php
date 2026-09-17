@@ -13,6 +13,7 @@ use Glhd\Bits\Tests\ResolvesSequencesFromMemory;
 use Glhd\Bits\Tests\TestCase;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Sleep;
+use InvalidArgumentException;
 
 class SonyflakeTest extends TestCase
 {
@@ -57,6 +58,19 @@ class SonyflakeTest extends TestCase
 		
 		$this->assertEquals($factory1->machine_id, $Sonyflake1->machine_id);
 		$this->assertEquals($factory2->machine_id, $Sonyflake2->machine_id);
+	}
+	
+	public function test_an_out_of_range_machine_id_is_named_correctly(): void
+	{
+		try {
+			new Sonyflake(timestamp: 0, sequence: 0, machine_id: 65_536, epoch: now());
+			$this->fail('Expected an out-of-range machine ID to be rejected.');
+		} catch (InvalidArgumentException $exception) {
+			$this->assertEquals(
+				'Machines must be an integer between 0 and 65535 (got 65536).',
+				$exception->getMessage()
+			);
+		}
 	}
 	
 	public function test_it_can_parse_an_existing_sonyflake(): void

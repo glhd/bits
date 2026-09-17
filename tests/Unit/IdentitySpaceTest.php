@@ -28,6 +28,21 @@ class IdentitySpaceTest extends TestCase
 		$this->assertEquals(65_536, $space->size());
 	}
 	
+	public function test_a_sonyflake_machine_id_is_pinned_by_its_own_name(): void
+	{
+		$space = new IdentitySpace(new SonyflakesConfig(), ['machine' => 42]);
+		
+		$this->assertTrue($space->isFixed());
+		$this->assertEquals([42], $space->at(0)->ids);
+		$this->assertEquals('machine:16=42', $space->signature());
+		
+		// Sonyflakes have no datacenter
+		$this->assertThrows(
+			fn() => new IdentitySpace(new SonyflakesConfig(), ['datacenter' => 42]),
+			InvalidArgumentException::class
+		);
+	}
+	
 	public function test_it_splits_an_index_across_segments(): void
 	{
 		$space = new IdentitySpace(new SnowflakesConfig());
@@ -153,6 +168,11 @@ class IdentitySpaceTest extends TestCase
 		$this->assertEquals(
 			'datacenter:5=2,worker:5',
 			(new IdentitySpace(new SnowflakesConfig(), ['datacenter' => 2]))->signature()
+		);
+		
+		$this->assertEquals(
+			'machine:16',
+			(new IdentitySpace(new SonyflakesConfig()))->signature()
 		);
 	}
 }

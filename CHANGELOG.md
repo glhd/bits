@@ -23,6 +23,7 @@ format. This project adheres to [Semantic Versioning](https://semver.org/spec/v2
 -   **Breaking:** `Configuration` gained `idSegments()`. Configurations that extend `GenericConfig` are unaffected.
 -   **Breaking:** the leading bit of `SnowflakesConfig` is now `SegmentType::Pad` rather than `SegmentType::Id`, so it is no longer counted as part of the worker ID space. This affects code that matches on `SegmentType` or calls `positionOf(SegmentType::Id)`.
 -   **Breaking:** `$factory->datacenter_id`, `->worker_id`, `->machine_id` and `->ids` are resolved through `__get()` now that their values are resolved lazily. Reading them still works; reflecting over them does not.
+-   **Breaking:** the ID segment of `SonyflakesConfig` is now labelled `machine` rather than `datacenter`, matching `Sonyflake::$machine_id` and the format itself — Sonyflakes have no datacenter. This changes the wording of out-of-range errors ("Machines must be an integer between 0 and 65535"), and the label used to pin a Sonyflake machine ID with `IdentitySpace` (`['machine' => 42]`).
 -   A process holding its own claimed identity uses `InMemorySequenceResolver`, since nothing else can be using that identity. Configured (and so possibly shared) IDs keep using `CacheSequenceResolver`.
 
 ## [0.6.2] - 2026-03-23

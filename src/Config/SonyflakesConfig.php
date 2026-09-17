@@ -14,7 +14,7 @@ class SonyflakesConfig extends GenericConfig
 			segments: new Collection([
 				Segment::timestamp(label: 'timestamp', length: 40),
 				Segment::sequence(label: 'sequence', length: 8),
-				Segment::id(label: 'datacenter', length: 16),
+				Segment::id(label: 'machine', length: 16),
 			]),
 		);
 	}
