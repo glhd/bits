@@ -25,6 +25,11 @@ class Segment
 		return new static($label, $length, SegmentType::Sequence);
 	}
 	
+	public static function pad(string $label, int $length): static
+	{
+		return new static($label, $length, SegmentType::Pad);
+	}
+	
 	public function __construct(
 		public string $label,
 		public int $length,
@@ -77,5 +82,10 @@ class Segment
 	public function isId(): bool
 	{
 		return $this->type === SegmentType::Id;
+	}
+	
+	public function isPad(): bool
+	{
+		return $this->type === SegmentType::Pad;
 	}
 }

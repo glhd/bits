@@ -20,6 +20,14 @@ interface Configuration
 	/** @return int[] */
 	public function positionOf(SegmentType $type): array;
 	
+	/**
+	 * The ID segments of this configuration, in the order they appear. These are the
+	 * segments that a ResolvesIdentities implementation provides values for.
+	 *
+	 * @return \Illuminate\Support\Collection<int, \Glhd\Bits\Config\Segment>
+	 */
+	public function idSegments(): Collection;
+	
 	public function timestamp(CarbonInterface $epoch, CarbonInterface $timestamp): int;
 	
 	public function timestampToDateTime(DateTimeInterface $epoch, int $timestamp): DateTimeInterface;

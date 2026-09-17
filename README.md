@@ -39,24 +39,130 @@ composer require glhd/bits
 
 ## Configuration
 
+### Worker and datacenter IDs
+
+Snowflakes are compact because each worker has its own ID. Two processes that share a worker
+and datacenter ID can generate the same snowflake in the same millisecond, so every process
+generating IDs at the same moment needs its own pair.
+
+**By default, Bits claims a pair for you.** The first time a process generates an ID, it takes an
+unused datacenter/worker pair from your cache, holds it for as long as it runs, and hands it back
+when it exits. You do not have to configure anything, and it works on Lambda, Vapor, Cloud Run,
+and anywhere else machines come and go.
+
+This needs a cache store shared across your processes, with an atomic `add`: **redis**
+(recommended), memcached, dynamodb, database, or file. The `array` store only lives inside one
+process, so it cannot keep two processes apart.
+
+```dotenv
+# Claim from a store other than your default one
+BITS_IDENTITY_STORE=redis
+
+# How long a claim lasts. Bits renews it as it generates IDs, so this is really
+# "how long a crashed process holds its pair". Defaults to 300 seconds.
+BITS_IDENTITY_TTL=300
+```
+
+The default snowflake format has 5 bits for the datacenter and 5 for the worker, so 1,024
+processes can generate snowflakes at once. Sonyflakes have 16 bits for the machine ID, so 65,536.
+Ask for one past that and Bits throws `IdentitySpaceExhausted` rather than hand out an ID that
+might collide.
+
+#### Assigning IDs yourself
+
+If your processes already have stable IDs — a fixed fleet, a Kubernetes StatefulSet ordinal, a
+container index — set them and Bits will not touch your cache:
+
+```dotenv
+BITS_DATACENTER_ID=2
+BITS_WORKER_ID=7
+```
+
+Set only one and Bits pins that one and claims the rest. Pinning `BITS_DATACENTER_ID=2` per
+region, for example, lets each region assign its own datacenter while processes still claim their
+own worker ID inside it.
+
+To go back to the pre-0.7 behavior, where an unset ID meant a random one:
+
+```dotenv
+BITS_IDENTITY_DRIVER=fixed
+```
+
 > [!warning]
-> If you do not configure the worker ID and datacenter ID, you may run into 
-> concurrency issues using Bits on multiple app servers.
+> A random worker ID collides more often than you would think. With 1,024 pairs, it takes only
+> 38 processes before two of them share one about half the time. This is why claiming is now
+> the default.
 
-There are two things you will need to configure to ensure that your IDs are valid and unique.
+#### While running tests
 
-### Set the `BITS_WORKER_ID` and `BITS_DATACENTER_ID`
+Bits does not claim identities under `php artisan test`. Your test cache is usually the `array`
+store, which would hand every parallel test worker the same pair, so tests keep the old behavior
+of a per-worker random ID. Set `BITS_IDENTITY_DRIVER=cache` to exercise claiming.
 
-Snowflakes are so compact because they rely on the fact that each worker has its own ID. If you are
-running multiple servers in multiple datacenters, you need to give each a unique value. You need to
-set a unique `BITS_DATACENTER_ID` (0-31) for each datacenter your application uses, and each worker in the
-same datacenter should have a unique `BITS_WORKER_ID` (0-31). This means that you can have, at most, 1024
-separate workers generating snowflakes at the same exact moment in time.
+#### Sourcing IDs from somewhere else
 
-> [!note]
-> If you use Lambda, this can be an issue. Eventually, we hope to have a serverless solution for
-> Bits, but right now you need to manage locking/releasing IDs yourself if you're generating snowflakes
-> in something like Laravel Vapor.
+Every factory asks a `ResolvesIdentities` implementation for its IDs:
+
+```php
+interface ResolvesIdentities
+{
+    public function identities(): WorkerIds;
+    public function release(): void;
+}
+```
+
+Bits ships two: `CacheIdentityResolver`, which claims from the cache, and
+`FixedIdentityResolver`, which returns the same IDs forever.
+
+To read IDs from somewhere Bits does not know about, extend `IdentityResolver` and return an
+index into the ID space. The space takes care of splitting that index back across segments, so
+you only deal in one number:
+
+```php
+use Glhd\Bits\IdentityResolvers\IdentityResolver;
+
+class StatefulSetResolver extends IdentityResolver
+{
+    protected function value(): int
+    {
+        // "web-7" -> 7
+        return (int) str(gethostname())->afterLast('-');
+    }
+}
+```
+
+Then bind it:
+
+```php
+use Glhd\Bits\Config\SnowflakesConfig;
+use Glhd\Bits\Contracts\ResolvesIdentities;
+use Glhd\Bits\IdentityResolvers\IdentitySpace;
+
+$this->app->singleton(ResolvesIdentities::class, function() {
+    return new StatefulSetResolver(new IdentitySpace(app(SnowflakesConfig::class)));
+});
+```
+
+#### How claiming works
+
+Each datacenter/worker pair gets its own cache key, claimed with `Cache::add()` — the first
+process to write a key wins and everyone else is told no. There is no shared lock and no shared
+list of who holds what, so a hundred cold starts do not queue behind each other.
+
+Two processes could still pick the same pair and one has to move on, so each process walks the ID
+space in its own order, from a random seed taken at startup. The walk is a linear congruential
+generator over the space, which visits every pair exactly once before repeating. Filling all
+1,024 snowflake pairs costs about 6,800 cache calls this way; every process scanning from pair
+zero would cost 524,800.
+
+A process renews its claim as it generates IDs, once a third of the TTL has passed. That means an
+ID is only ever stamped with a pair that had at least two thirds of its lifetime left when it was
+last confirmed. If a renewal finds the pair gone or taken over, the process claims a new one
+before generating its next ID.
+
+Claims are given back when the process exits, and are tied to the OS process rather than to the
+container. That matters on Octane, where the container is rebuilt per request but the process
+outlives all of them.
 
 ### Set the `BITS_EPOCH`
 

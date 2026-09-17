@@ -6,11 +6,14 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Closure;
 use DateTime;
+use Glhd\Bits\Config\WorkerIds;
 use Glhd\Bits\Contracts\Configuration;
 use Glhd\Bits\Contracts\MakesBits;
+use Glhd\Bits\Contracts\ResolvesIdentities;
 use Glhd\Bits\Contracts\ResolvesSequences;
 use Illuminate\Support\Sleep;
 use InvalidArgumentException;
+use OutOfBoundsException;
 use RuntimeException;
 
 // Add support for Sleep class in older versions of Laravel
@@ -22,10 +25,13 @@ abstract class BitsFactory implements MakesBits
 {
 	protected ?Closure $now_resolver = null;
 	
+	protected ?WorkerIds $validated_ids = null;
+	
 	public function __construct(
 		public readonly CarbonInterface $epoch,
 		protected Configuration $config,
 		protected ResolvesSequences $sequence,
+		protected ResolvesIdentities $identities,
 	) {
 		$this->validateConfiguration();
 	}
@@ -40,6 +46,33 @@ abstract class BitsFactory implements MakesBits
 		$this->now_resolver = $now_resolver;
 		
 		return $this;
+	}
+	
+	/** The resolver that this factory asks for worker/datacenter IDs */
+	public function identityResolver(): ResolvesIdentities
+	{
+		return $this->identities;
+	}
+	
+	/**
+	 * The IDs to stamp into the next generated ID.
+	 *
+	 * This is deliberately resolved on every ID rather than cached on the factory: a
+	 * resolver that claims its identities at runtime needs the chance to renew that
+	 * claim, or to notice it lost it and take a new one.
+	 */
+	public function workerIds(): WorkerIds
+	{
+		$ids = $this->identities->identities();
+		
+		// Only worth validating when the resolver hands back something new
+		if ($ids !== $this->validated_ids) {
+			$this->config->validate($ids);
+			
+			$this->validated_ids = $ids;
+		}
+		
+		return $ids;
 	}
 	
 	protected function now(): CarbonInterface
@@ -83,5 +116,20 @@ abstract class BitsFactory implements MakesBits
 				$this->epoch->nowWithSameTz()->toDateTimeString(),
 			));
 		}
+	}
+	
+	/**
+	 * Worker and datacenter IDs used to be constructor arguments, so they were readable
+	 * as properties. They are resolved lazily now, but reading them still works.
+	 */
+	protected function workerIdProperty(string $name, array $properties): int
+	{
+		$position = $properties[$name] ?? null;
+		
+		if (null === $position) {
+			throw new OutOfBoundsException(sprintf('Undefined property: %s::$%s', static::class, $name));
+		}
+		
+		return $this->workerIds()[$position];
 	}
 }

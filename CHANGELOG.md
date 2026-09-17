@@ -5,6 +5,26 @@ format. This project adheres to [Semantic Versioning](https://semver.org/spec/v2
 
 ## [Unreleased]
 
+### Added
+
+-   Datacenter and worker IDs are now claimed from the cache at runtime, so Bits works on Lambda, Vapor, Cloud Run and anywhere else a process has no ID assigned to it up front. Each process takes an unused pair, renews it while it runs, and hands it back when it exits.
+-   Added the `ResolvesIdentities` contract, along with `CacheIdentityResolver` (claims from the cache), `FixedIdentityResolver` (keeps the previous behavior) and an `IdentityResolver` base class for sourcing IDs from anywhere else.
+-   Added a `bits.identity` config block (`driver`, `store`, `ttl`, `prefix`, `max_probes`, `attempts`) and a `bits.sequence_resolver` setting.
+-   Setting only one of `BITS_DATACENTER_ID` / `BITS_WORKER_ID` now pins that one and claims the other.
+-   Added `SegmentType::Pad` and `Segment::pad()` for bits a configuration reserves but never fills, and `Configuration::idSegments()` for the segments an identity resolver provides values for.
+-   Added `WorkerIds::second()`.
+-   Factories expose `identityResolver()`, `workerIds()`, and `datacenterId()` / `workerId()` / `machineId()` / `ids()`.
+-   Added `SnowflakeFactory::withIdentities()`, `SonyflakeFactory::withIdentities()` and `GenericFactory::withIdentities()`.
+
+### Changed
+
+-   **Breaking:** with no `BITS_DATACENTER_ID` or `BITS_WORKER_ID` set, Bits now claims a pair from the cache instead of picking a random one. Set `BITS_IDENTITY_DRIVER=fixed` for the old behavior. Claiming needs a cache store with an atomic `add` (redis, memcached, dynamodb, database or file); the `array` store cannot keep two processes apart. Identities are not claimed while running tests.
+-   **Breaking:** `BitsFactory::__construct()` takes a `ResolvesIdentities`. Subclasses of `BitsFactory` need updating; `new SnowflakeFactory($epoch, $datacenter_id, $worker_id, $config, $sequence)` and the equivalent Sonyflake and Generic calls still work, by position and by name.
+-   **Breaking:** `Configuration` gained `idSegments()`. Configurations that extend `GenericConfig` are unaffected.
+-   **Breaking:** the leading bit of `SnowflakesConfig` is now `SegmentType::Pad` rather than `SegmentType::Id`, so it is no longer counted as part of the worker ID space. This affects code that matches on `SegmentType` or calls `positionOf(SegmentType::Id)`.
+-   **Breaking:** `$factory->datacenter_id`, `->worker_id`, `->machine_id` and `->ids` are resolved through `__get()` now that their values are resolved lazily. Reading them still works; reflecting over them does not.
+-   A process holding its own claimed identity uses `InMemorySequenceResolver`, since nothing else can be using that identity. Configured (and so possibly shared) IDs keep using `CacheSequenceResolver`.
+
 ## [0.6.2] - 2026-03-23
 
 ## [0.6.1] - 2025-03-04

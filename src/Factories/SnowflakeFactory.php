@@ -5,33 +5,75 @@ namespace Glhd\Bits\Factories;
 use Carbon\CarbonInterface;
 use Glhd\Bits\Bits;
 use Glhd\Bits\Config\SnowflakesConfig;
+use Glhd\Bits\Config\WorkerIds;
 use Glhd\Bits\Contracts\MakesSnowflakes;
+use Glhd\Bits\Contracts\ResolvesIdentities;
 use Glhd\Bits\Contracts\ResolvesSequences;
+use Glhd\Bits\IdentityResolvers\FixedIdentityResolver;
 use Glhd\Bits\Snowflake;
 use InvalidArgumentException;
 
-/** @property SnowflakesConfig $config */
+/**
+ * @property SnowflakesConfig $config
+ * @property-read int $datacenter_id
+ * @property-read int $worker_id
+ */
 class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 {
+	protected const ID_POSITIONS = ['datacenter_id' => 0, 'worker_id' => 1];
+	
+	public static function withIdentities(
+		CarbonInterface $epoch,
+		ResolvesIdentities $identities,
+		?SnowflakesConfig $config = null,
+		?ResolvesSequences $sequence = null,
+	): static {
+		return new static($epoch, $identities, null, $config, $sequence);
+	}
+	
+	/**
+	 * @param \Glhd\Bits\Contracts\ResolvesIdentities|int $datacenter_id A resolver, or a fixed
+	 *                                                                  datacenter ID paired with $worker_id
+	 */
 	public function __construct(
 		CarbonInterface $epoch,
-		public readonly int $datacenter_id,
-		public readonly int $worker_id,
-		SnowflakesConfig $config,
-		ResolvesSequences $sequence,
+		ResolvesIdentities|int $datacenter_id,
+		?int $worker_id = null,
+		?SnowflakesConfig $config = null,
+		?ResolvesSequences $sequence = null,
 	) {
+		if (is_int($datacenter_id) && null === $worker_id) {
+			throw new InvalidArgumentException(
+				'A fixed datacenter ID must be paired with a worker ID. Pass a ResolvesIdentities '
+				.'implementation instead to have both claimed at runtime.'
+			);
+		}
+		
 		parent::__construct(
 			epoch: $epoch,
-			config: $config,
-			sequence: $sequence,
+			config: $config ?? app(SnowflakesConfig::class),
+			sequence: $sequence ?? app(ResolvesSequences::class),
+			identities: is_int($datacenter_id)
+				? FixedIdentityResolver::make($datacenter_id, $worker_id)
+				: $datacenter_id,
 		);
+	}
+	
+	public function datacenterId(): int
+	{
+		return $this->workerIds()[0];
+	}
+	
+	public function workerId(): int
+	{
+		return $this->workerIds()[1];
 	}
 	
 	public function make(): Snowflake
 	{
 		[$timestamp, $sequence] = $this->waitForValidTimestampAndSequence();
 		
-		return new Snowflake($timestamp, $this->datacenter_id, $this->worker_id, $sequence, $this->epoch, $this->config);
+		return $this->snowflake($timestamp, $sequence, $this->workerIds());
 	}
 	
 	public function makeFromTimestamp(CarbonInterface $timestamp): Snowflake
@@ -43,7 +85,7 @@ class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 			throw new InvalidArgumentException('Hit sequence limit for timestamp.');
 		}
 		
-		return new Snowflake($timestamp, $this->datacenter_id, $this->worker_id, $sequence, $this->epoch, $this->config);
+		return $this->snowflake($timestamp, $sequence, $this->workerIds());
 	}
 	
 	public function firstForTimestamp(CarbonInterface $timestamp): Snowflake
@@ -71,5 +113,20 @@ class SnowflakeFactory extends BitsFactory implements MakesSnowflakes
 		}
 		
 		return $value;
+	}
+	
+	public function __get(string $name): int
+	{
+		return $this->workerIdProperty($name, static::ID_POSITIONS);
+	}
+	
+	public function __isset(string $name): bool
+	{
+		return array_key_exists($name, static::ID_POSITIONS);
+	}
+	
+	protected function snowflake(int $timestamp, int $sequence, WorkerIds $ids): Snowflake
+	{
+		return new Snowflake($timestamp, $ids[0], $ids[1], $sequence, $this->epoch, $this->config);
 	}
 }

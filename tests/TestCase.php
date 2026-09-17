@@ -3,6 +3,7 @@
 namespace Glhd\Bits\Tests;
 
 use Carbon\CarbonInterval;
+use Glhd\Bits\IdentityResolvers\CacheIdentityResolver;
 use Glhd\Bits\Support\BitsServiceProvider;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Sleep;
@@ -28,6 +29,14 @@ abstract class TestCase extends Orchestra
 			
 			Date::setTestNow(now()->addMilliseconds($duration->totalMilliseconds));
 		});
+	}
+	
+	protected function tearDown(): void
+	{
+		// Claims are tracked per-process, so they would otherwise leak between tests
+		CacheIdentityResolver::forgetClaims();
+		
+		parent::tearDown();
 	}
 	
 	protected function getPackageProviders($app)

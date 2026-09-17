@@ -3,6 +3,7 @@
 namespace Glhd\Bits\Config;
 
 use ArrayAccess;
+use BadMethodCallException;
 use LogicException;
 
 class WorkerIds implements ArrayAccess
@@ -18,6 +19,15 @@ class WorkerIds implements ArrayAccess
 	public function first(): int
 	{
 		return $this->ids[0];
+	}
+	
+	public function second(): int
+	{
+		if (! isset($this->ids[1])) {
+			throw new BadMethodCallException('No second ID configured.');
+		}
+		
+		return $this->ids[1];
 	}
 	
 	public function offsetExists(mixed $offset): bool

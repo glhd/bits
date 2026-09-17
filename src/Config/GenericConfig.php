@@ -19,6 +19,8 @@ class GenericConfig implements Configuration
 	
 	protected ?Segment $sequence_segment = null;
 	
+	protected ?Collection $id_segments = null;
+	
 	public function __construct(
 		protected int $precision,
 		protected int $unit,
@@ -32,11 +34,11 @@ class GenericConfig implements Configuration
 	
 	public function organize(WorkerIds $ids, int $timestamp, int $sequence): array
 	{
-		$provided_count = count($ids->ids) + 2;
-		$segment_count = $this->segments->count();
+		$provided_count = count($ids->ids);
+		$expected_count = $this->idSegments()->count();
 		
-		if ($provided_count !== $segment_count) {
-			throw new InvalidArgumentException("Expected {$segment_count} segments but received {$provided_count}.");
+		if ($provided_count !== $expected_count) {
+			throw new InvalidArgumentException("Expected {$expected_count} ID segments but received {$provided_count}.");
 		}
 		
 		$ids = $ids->ids;
@@ -47,9 +49,19 @@ class GenericConfig implements Configuration
 					SegmentType::Id => array_shift($ids),
 					SegmentType::Timestamp => $timestamp,
 					SegmentType::Sequence => $sequence,
+					SegmentType::Pad => 0,
 				};
 			})
 			->toArray();
+	}
+	
+	/** @return \Illuminate\Support\Collection<int, \Glhd\Bits\Config\Segment> */
+	public function idSegments(): Collection
+	{
+		// Resolved on every generated ID, and segments never change after construction
+		return $this->id_segments ??= $this->segments
+			->filter(fn(Segment $segment) => $segment->isId())
+			->values();
 	}
 	
 	public function parse(int $id): array
@@ -130,10 +142,16 @@ class GenericConfig implements Configuration
 	
 	protected function mapWorkerIdsToPositions(WorkerIds $values): Collection
 	{
+		$provided_count = count($values->ids);
+		$expected_count = $this->idSegments()->count();
+		
+		if ($provided_count !== $expected_count) {
+			throw new InvalidArgumentException("Expected {$expected_count} ID segments but received {$provided_count}.");
+		}
+		
 		$ids = $values->ids;
 		
-		return $this->segments
-			->filter(fn(Segment $segment) => $segment->isId())
+		return $this->idSegments()
 			->mapWithKeys(function(Segment $segment) use (&$ids) {
 				return [$segment->position() => array_shift($ids)];
 			});
